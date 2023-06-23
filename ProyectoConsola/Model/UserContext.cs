@@ -8,6 +8,6 @@ public class UserContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlServer("Server=localhost;Database=bd_sd2023;user=sa;password=Tr4_oht10q;Trusted_Connection=False;");
+        optionsBuilder.UseSqlServer("Data Source=DESKTOP-LIVLF6G;Initial Catalog=bd_sd2023;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False");
     }
 }
