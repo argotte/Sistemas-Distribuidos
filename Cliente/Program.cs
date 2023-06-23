@@ -12,20 +12,7 @@ namespace ClienteSocket.ProgramPractica03
             {
                 while (true)
                 {
-                    // Console.Write("Introduzca la direccion IP del servidor (-1 para salir): ");
-                    // string? ipAddress = Console.ReadLine();
-                    //
-                    // if (ipAddress == "-1")
-                    //     break;
-                    //
-                    // Console.Write("Introduzca el numero de puerto: ");
-                    // string? portNumStr = Console.ReadLine();
-                    //
-                    // int portNumInt;
-                    // int.TryParse(portNumStr, out portNumInt);
-                    //
-                    // StartClient(ipAddress, portNumInt);
-                    StartClient("10.12.35.104", 5000);
+                   StartClient("192.168.56.1", 5002);
                 }
             }
             catch (Exception ex)
@@ -55,22 +42,19 @@ namespace ClienteSocket.ProgramPractica03
                 while (true)
                 {
                     // Leer input del usuario desde la consola
-                    Console.WriteLine("Ingrese un mensaje para el servidor('quit' para salir): ");
+                    Console.WriteLine("Ingrese el nombre de usuario para el servidor A ('quit' para salir): ");
                     string message = Console.ReadLine();
 
                     // Si el mensaje es "x", salir del ciclo
                     if (message == "quit")
                         break;
 
-                    // Obtener la hora actual del cliente
-                    DateTime clientTime = DateTime.Now;
-
-                    // Agregar la hora actual del cliente al mensaje
-                    message = clientTime + ";" + message;
-
                     // Enviar el mensaje al servidor
                     byte[] messageBytes = Encoding.ASCII.GetBytes(message);
                     sender.Send(messageBytes);
+
+                    // Limpiar la variable message
+                    message = "";
 
                     // Recibir la respuesta del servidor y mostrarla en la consola
                     byte[] responseBytes = new byte[1024];
@@ -78,10 +62,6 @@ namespace ClienteSocket.ProgramPractica03
                     string response = Encoding.ASCII.GetString(responseBytes, 0, bytesRec);
                     Console.WriteLine(response);
 
-                    // Enviar la diferencia de tiempo entre el cliente y el servidor al servidor
-                    TimeSpan timeDiff = DateTime.Now - clientTime;
-                    byte[] timeDiffBytes = Encoding.ASCII.GetBytes(timeDiff.TotalMilliseconds.ToString());
-                    sender.Send(timeDiffBytes);
                 }
             }
             catch (SocketException socketEx)

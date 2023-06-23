@@ -3,10 +3,11 @@ namespace ProyectoConsola.Model;
 
 public class UserContext : DbContext
 {
-    public DbSet<User>? Users { get; set; }
+    public DbSet<User>? Users{ get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlServer("Server=localhost;Database=bd_sd2023;user=sa;password=Tr4_oht10q;Trusted_Connection=False;TrustServerCertificate=true");
+        optionsBuilder.UseSqlServer("Data Source=DESKTOP-LIVLF6G;Initial Catalog=bd_sd2023;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False");
+
     }
 }
