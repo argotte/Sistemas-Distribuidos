@@ -35,36 +35,36 @@ namespace ClienteSocket.ProgramPractica03
                 sender.Connect(endpoint);
                 Console.WriteLine("Conexión establecida con el servidor.");
 
-                // while (true)
-                // {
-                //     // Leer input del usuario desde la consola
-                //     string message = "jorge_ld8";
-                //     
-                //     // Enviar el mensaje al servidor
-                //     byte[] messageBytes = Encoding.ASCII.GetBytes(message);
-                //     sender.Send(messageBytes);
-                //
-                //     // Recibir la respuesta del servidor y mostrarla en la consola
-                //     byte[] responseBytes = new byte[1024];
-                //     int bytesRec = sender.Receive(responseBytes);
-                //     string response = Encoding.ASCII.GetString(responseBytes, 0, bytesRec);
-                //     Console.WriteLine(response);
-                //
-                // }
-                
                 // Leer input del usuario desde la consola
-                string message = "FIRMAR\njorge_ld8";
+                string message = "FIRMAR\njorge_ld8\nHola Mundo";
+                
+                string[] words = message.Split("\n");
+                string firstWord = words[0];
                 
                 // Enviar el mensaje al servidor
                 byte[] messageBytes = Encoding.ASCII.GetBytes(message);
                 sender.Send(messageBytes);
-                
                 // Recibir la respuesta del servidor y mostrarla en la consola
                 byte[] responseBytes = new byte[1024];
                 int bytesRec = sender.Receive(responseBytes);
                 string response = Encoding.ASCII.GetString(responseBytes, 0, bytesRec);
                 Console.WriteLine(response);
                 
+                
+                if (firstWord == "FIRMAR")
+                {
+                    //En response estará la clave de 8 digitos del usuario
+                    //Flujo de firmar que termina con escritura de un archivo de salida
+                }
+                else if (firstWord == "AUTENTICAR")
+                {
+                    //Si la respuesta es "1" es VALIDO, si la respuesta es "0" es INVALIDO
+                    //Flujo de autenticar que termina con escritura de un archivo de salida
+                }
+                else if (firstWord == "INTEGRIDAD")
+                {
+                    
+                }
                 Console.WriteLine("Presione una tecla para continuar");
                 Console.ReadKey();
             }
