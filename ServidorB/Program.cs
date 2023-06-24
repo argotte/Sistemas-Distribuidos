@@ -122,14 +122,7 @@ namespace ServidorSocket
             byte[] messageBytes = Encoding.ASCII.GetBytes(usuario != null && usuario.Clave == password ? "1" : "0");
             sender.Send(messageBytes);
         }
-
-        //ya no es necesario los metodos send de los objetos sokect ya tienen un metodo para enviar .Send
-        public static void SendToClient(Socket clientSocket, string message)
-        {
-            byte[] messageBytes = Encoding.ASCII.GetBytes(message);
-            clientSocket.Send(messageBytes);
-        }
-
+        
         //metodo para cerrar la conexión de algún cliente, recibe un socket y luego cierra la conexión del mismo
         public static void CloseConnection(Socket clientSocket)
         {

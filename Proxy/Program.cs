@@ -156,36 +156,4 @@ namespace ServidorSocket;
             clientSocket.Shutdown(SocketShutdown.Both);
             clientSocket.Close();
         }
-
-        public static string GetLocalIPAddress()
-        {
-            IPHostEntry host;
-            string localIP = "";
-            host = Dns.GetHostEntry(Dns.GetHostName());
-
-            foreach (IPAddress ip in host.AddressList)
-            {
-                if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-                {
-                    localIP = ip.ToString();
-                    break;
-                }
-            }
-
-            return localIP;
-        }
-
-        public static string GetWifiIPAddress()
-        {
-            var wifiInterface = NetworkInterface.GetAllNetworkInterfaces()
-                .FirstOrDefault(i => i.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 && i.OperationalStatus == OperationalStatus.Up);
-
-            if (wifiInterface == null)
-                return null;
-
-            var ipProps = wifiInterface.GetIPProperties();
-            var wifiIp = ipProps.UnicastAddresses.FirstOrDefault(a => a.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
-
-            return wifiIp?.Address.ToString();
-        }
     }
