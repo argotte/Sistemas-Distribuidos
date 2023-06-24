@@ -118,19 +118,9 @@ namespace ServidorSocket
 
             // Buscar el usuario en la base de datos
             var usuario = _dbContext.Users.FirstOrDefault(u => u.UserName == username);
-
-            if (usuario != null && usuario.Clave == password)
-            {
-                // Si el usuario existe y la contraseña coincide, responder "true"
-                byte[] messageBytes = Encoding.ASCII.GetBytes("valido");
-                sender.Send(messageBytes);
-            }
-            else
-            {
-                // Si el usuario no existe o la contraseña no coincide, responder "false"
-                byte[] messageBytes = Encoding.ASCII.GetBytes("invalido");
-                sender.Send(messageBytes);
-            }
+           
+            byte[] messageBytes = Encoding.ASCII.GetBytes(usuario != null && usuario.Clave == password ? "1" : "0");
+            sender.Send(messageBytes);
         }
 
         //ya no es necesario los metodos send de los objetos sokect ya tienen un metodo para enviar .Send
