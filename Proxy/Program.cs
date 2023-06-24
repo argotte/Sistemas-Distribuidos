@@ -28,25 +28,11 @@ namespace ServidorSocket;
             _serverRunning = true;
 
             Console.WriteLine("Servidor Proxy. Esperando conexiones...");
-            Console.WriteLine($"Dirección Ip Ethernet del servidor: {GetLocalIPAddress()} ");
-            Console.WriteLine($"Dirección Ip WIFI del servidor: {GetWifiIPAddress()} ");
+            // Console.WriteLine($"Dirección Ip Ethernet del servidor: {GetLocalIPAddress()} ");
+            // Console.WriteLine($"Dirección Ip WIFI del servidor: {GetWifiIPAddress()} ");
 
-            //Conectar con Servidor Autenticacion puerto 5002
-            IPEndPoint endpointAuth = new IPEndPoint(IPAddress.Parse(GetWifiIPAddress()!), 5002);
-            Socket senderAuth = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            senderAuth.Connect(endpointAuth);
+            Console.ReadKey();
             
-            //Conectar con Servidor Claves puerto 5003
-            IPEndPoint endpointClaves = new IPEndPoint(IPAddress.Parse(GetWifiIPAddress()!), 5003);
-            Socket senderClaves = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            senderClaves.Connect(endpointClaves);
-
-            Thread threadAuth = new Thread(() => HandleAuthConn(senderAuth));
-            threadAuth.Start();
-
-            Thread threadClaves = new Thread(() => HandleClavesConn(senderClaves));
-            threadClaves.Start();
-
             try
             {
                 while (_serverRunning)
@@ -85,17 +71,17 @@ namespace ServidorSocket;
             Console.WriteLine(response);
         }
         
-        public static void HandleClavesConn(Socket sender)
+        public static void HandleClavesConn(Socket sender, Socket handlerServer, string clave)
         {
             // Enviar el mensaje al servidor
-            byte[] messageBytes = Encoding.ASCII.GetBytes("Hello from proxy server");
+            byte[] messageBytes = Encoding.ASCII.GetBytes(clave);
             sender.Send(messageBytes);
 
             // Recibir la respuesta del servidor y mostrarla en la consola
             byte[] responseBytes = new byte[1024];
             int bytesRec = sender.Receive(responseBytes);
             string response = Encoding.ASCII.GetString(responseBytes, 0, bytesRec);
-            Console.WriteLine(response);
+            SendToClient(handlerServer, response);
         }
 
         public static void HandleClient(Socket handler)
@@ -116,34 +102,41 @@ namespace ServidorSocket;
 
                     int bytesRec = handler.Receive(buffer);
                     data += Encoding.ASCII.GetString(buffer, 0, bytesRec);
-                    Console.WriteLine("Mensaje recibido del cliente: " + data);
+                    Console.WriteLine("Mensaje recibido del cliente: \n" + data);
+                    string[] words = data.Split("\n");
+                    string firstWord = words[0];
 
-                    if (data.IndexOf("<EOF>") > -1)
+                    if (firstWord == "FIRMAR")
                     {
-                        break;
-                    }
+                        //Conectar con Servidor Claves puerto 5003
+                        IPEndPoint endpointClaves = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5002);
+                        Socket senderClaves = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                        senderClaves.Connect(endpointClaves);
 
-                    Console.WriteLine("escribe cerrar para cerrar las conexiones del cliente:");
-                    string responseCerrar = Console.ReadLine().ToLower() ;
-                    if (responseCerrar == "cerrar") 
-                    { 
-                        CloseConnection(handler);
-                        Console.WriteLine("conexión cerrada exitosamente");
-                        break; // salir del ciclo while después de cerrar la conexión
+                        Thread threadClaves = new Thread(() => HandleClavesConn(senderClaves, handler,  words[1]));
+                        threadClaves.Start();
                     }
-
-                    if (handler.Connected)
-                    {
-                        Console.WriteLine("Ingrese una respuesta para el cliente:");
-                        string response = Console.ReadLine();
-                        SendToClient(handler, response);
-                    }
-                  
                     
-                }
+                    else if (firstWord == "AUTENTICAR")
+                    {
+                        //Conectar con Servidor Autenticacion puerto 5002
+                        IPEndPoint endpointAuth = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5003);
+                        Socket senderAuth = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                        senderAuth.Connect(endpointAuth);
+            
+                        Thread threadAuth = new Thread(() => HandleAuthConn(senderAuth));
+                        threadAuth.Start();
+                    }
+                    else if (firstWord == "INTEGRIDAD")
+                    {
+                        //INTEGRIDAD accion
+                    }
+                    
+                    if (data.IndexOf("<EOF>") > -1)
+                        break;
 
-                //handler.Shutdown(SocketShutdown.Both);
-                //handler.Close();
+                }
+                CloseConnection(handler);
             }
             catch (Exception ex)
             {

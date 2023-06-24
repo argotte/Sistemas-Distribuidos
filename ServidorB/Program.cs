@@ -24,7 +24,7 @@ namespace ServidorSocket
         public static void StartServer()
         {
             // Establecer el endpoint para el socket se acordó el puerto 5002 para el servidor de claves
-            IPEndPoint endpoint = new IPEndPoint(IPAddress.Any, 5002); // 
+            IPEndPoint endpoint = new IPEndPoint(IPAddress.Any, 5003); // 
 
             // Crear un socket TCP/IP
             Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -35,9 +35,9 @@ namespace ServidorSocket
 
             _serverRunning = true; // para entrar al ciclo infinito 
 
-            Console.WriteLine("Servidor Proxy. Esperando conexiones...");
-            Console.WriteLine($"Dirección Ip Ethernet del servidor: {GetLocalIPAddress()} ");
-            Console.WriteLine($"Dirección Ip WIFI del servidor: {GetWifiIPAddress()} ");
+            Console.WriteLine("Servidor Auth. Esperando conexiones...");
+            // Console.WriteLine($"Dirección Ip Ethernet del servidor: {GetLocalIPAddress()} ");
+            // Console.WriteLine($"Dirección Ip WIFI del servidor: {GetWifiIPAddress()} ");
 
             try
             {

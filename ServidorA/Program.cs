@@ -2,8 +2,6 @@
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
-using Azure;
-using Microsoft.EntityFrameworkCore;
 using ProyectoConsola.Model;
 
 namespace ServidorA
@@ -35,9 +33,9 @@ namespace ServidorA
 
             _serverRunning = true; // para entrar al ciclo infinito 
 
-            Console.WriteLine("Servidor Proxy. Esperando conexiones...");
-            Console.WriteLine($"Dirección Ip Ethernet del servidor: {GetLocalIPAddress()} ");
-            Console.WriteLine($"Dirección Ip WIFI del servidor: {GetWifiIPAddress()} ");
+            Console.WriteLine("Servidor de Claves. Esperando conexiones...");
+            // Console.WriteLine($"Dirección Ip Ethernet del servidor: {GetLocalIPAddress()} ");
+            // Console.WriteLine($"Dirección Ip WIFI del servidor: {GetWifiIPAddress()} ");
                        
             try
             {

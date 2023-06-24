@@ -10,18 +10,14 @@ namespace ClienteSocket.ProgramPractica03
         {
             try
             {
-                while (true)
-                {
-                   StartClient("192.168.56.1", 5002);
-                }
+                Console.ReadKey();
+                StartClient("127.0.0.1", 5000);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
-            // Esperar a que el usuario presione Enter para salir
-            // Console.WriteLine("Presione Enter para salir.");
-            // Console.ReadLine();
+            
             Console.WriteLine("Programa finalizado");
         }
 
@@ -39,30 +35,38 @@ namespace ClienteSocket.ProgramPractica03
                 sender.Connect(endpoint);
                 Console.WriteLine("Conexión establecida con el servidor.");
 
-                while (true)
-                {
-                    // Leer input del usuario desde la consola
-                    Console.WriteLine("Ingrese el nombre de usuario para el servidor A ('quit' para salir): ");
-                    string message = Console.ReadLine();
-
-                    // Si el mensaje es "x", salir del ciclo
-                    if (message == "quit")
-                        break;
-
-                    // Enviar el mensaje al servidor
-                    byte[] messageBytes = Encoding.ASCII.GetBytes(message);
-                    sender.Send(messageBytes);
-
-                    // Limpiar la variable message
-                    message = "";
-
-                    // Recibir la respuesta del servidor y mostrarla en la consola
-                    byte[] responseBytes = new byte[1024];
-                    int bytesRec = sender.Receive(responseBytes);
-                    string response = Encoding.ASCII.GetString(responseBytes, 0, bytesRec);
-                    Console.WriteLine(response);
-
-                }
+                // while (true)
+                // {
+                //     // Leer input del usuario desde la consola
+                //     string message = "jorge_ld8";
+                //     
+                //     // Enviar el mensaje al servidor
+                //     byte[] messageBytes = Encoding.ASCII.GetBytes(message);
+                //     sender.Send(messageBytes);
+                //
+                //     // Recibir la respuesta del servidor y mostrarla en la consola
+                //     byte[] responseBytes = new byte[1024];
+                //     int bytesRec = sender.Receive(responseBytes);
+                //     string response = Encoding.ASCII.GetString(responseBytes, 0, bytesRec);
+                //     Console.WriteLine(response);
+                //
+                // }
+                
+                // Leer input del usuario desde la consola
+                string message = "FIRMAR\njorge_ld8";
+                
+                // Enviar el mensaje al servidor
+                byte[] messageBytes = Encoding.ASCII.GetBytes(message);
+                sender.Send(messageBytes);
+                
+                // Recibir la respuesta del servidor y mostrarla en la consola
+                byte[] responseBytes = new byte[1024];
+                int bytesRec = sender.Receive(responseBytes);
+                string response = Encoding.ASCII.GetString(responseBytes, 0, bytesRec);
+                Console.WriteLine(response);
+                
+                Console.WriteLine("Presione una tecla para continuar");
+                Console.ReadKey();
             }
             catch (SocketException socketEx)
             {
