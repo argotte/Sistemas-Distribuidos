@@ -35,9 +35,9 @@ namespace ServidorSocket
 
             _serverRunning = true; // para entrar al ciclo infinito 
 
-            //Console.WriteLine("Servidor Proxy. Esperando conexiones...");
-            //Console.WriteLine($"Dirección Ip Ethernet del servidor: {GetLocalIPAddress()} ");
-            //Console.WriteLine($"Dirección Ip WIFI del servidor: {GetWifiIPAddress()} ");
+            Console.WriteLine("Servidor Proxy. Esperando conexiones...");
+            Console.WriteLine($"Dirección Ip Ethernet del servidor: {GetLocalIPAddress()} ");
+            Console.WriteLine($"Dirección Ip WIFI del servidor: {GetWifiIPAddress()} ");
 
             try
             {
@@ -46,7 +46,7 @@ namespace ServidorSocket
                     // Esperar por una conexión
                     Socket handler = listener.Accept();
 
-                    //Console.WriteLine("Conexión aceptada desde " + handler.RemoteEndPoint);
+                    Console.WriteLine("Conexión aceptada desde " + handler.RemoteEndPoint);
 
                     // Iniciar un nuevo hilo para manejar la conexión del cliente
                     Thread thread = new Thread(() => HandleClient(handler));
@@ -55,7 +55,7 @@ namespace ServidorSocket
             }
             catch (Exception ex)
             {
-                //Console.WriteLine(ex.ToString());
+                Console.WriteLine(ex.ToString());
             }
             finally
             {
@@ -92,7 +92,7 @@ namespace ServidorSocket
                     if (data == "cerrar") // si recibe cerrar cierra la conexión del cliente que envío la frase 
                     {
                         CloseConnection(handler);
-                        // Console.WriteLine("Conexión cerrada exitosamente");
+                         Console.WriteLine("Conexión cerrada exitosamente");
                         break;
                     }
                     else
@@ -104,51 +104,33 @@ namespace ServidorSocket
             }
             catch (Exception ex)
             {
-                //  Console.WriteLine(ex.ToString());
+                 Console.WriteLine(ex.ToString());
             }
         }
         //metodo que recibe el nombre de usuario y el socket del cliente tambien el mensaje que se pasó ya deserealizado
         //realiza una conexión a la BD y comprueba que que existe el user de no existir lo crea en la BD
-        public static void HandleClavesConn(Socket sender, string data) // se podría agregar patron mediador para mas eficiencia, pero da ladilla para este proyecto XD 
+        public static void HandleClavesConn(Socket sender, string data)
         {
+            // Separar el nombre de usuario y la contraseña
+            string[] parts = data.Split(' ');
+            string username = parts[0];
+            string password = parts[1];
 
             // Buscar el usuario en la base de datos
-            var usuario = _dbContext.Users.FirstOrDefault(u => u.UserName == data);
-            if (usuario != null)
-            {
-                // Si el usuario existe, devolver su clave
-                byte[] messageBytes = Encoding.ASCII.GetBytes(usuario.Clave);
-                sender.Send(messageBytes);// metodo que envía al cliente 
+            var usuario = _dbContext.Users.FirstOrDefault(u => u.UserName == username);
 
+            if (usuario != null && usuario.Clave == password)
+            {
+                // Si el usuario existe y la contraseña coincide, responder "true"
+                byte[] messageBytes = Encoding.ASCII.GetBytes("valido");
+                sender.Send(messageBytes);
             }
             else
             {
-                // Si el usuario no existe, generar una clave aleatoria y guardarla en la base de datos
-                var clave = GenerarClaveAleatoria(); // metodo que genera la clave aleatoria 
-                usuario = new User { UserName = data, Clave = clave }; // creación de nuesta instancia de usuario desde models
-                _dbContext.Users.Add(usuario); // metodo de EF que hace el insert en BD 
-                _dbContext.SaveChanges(); // Guardar cambios EF 
-
-                // Devolver la clave al cliente
-                byte[] messageBytes = Encoding.ASCII.GetBytes(clave);// se serializa el mensaje para ser enviado al cliente 
-                sender.Send(messageBytes); // metodo que envía al cliente 
-
-
+                // Si el usuario no existe o la contraseña no coincide, responder "false"
+                byte[] messageBytes = Encoding.ASCII.GetBytes("invalido");
+                sender.Send(messageBytes);
             }
-        }
-
-        // metodo que genera una clave aleratoria de 8 digitos 
-        private static string GenerarClaveAleatoria()
-        {
-            const string caracteresPermitidos = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            var random = new Random();
-            var clave = new StringBuilder();
-            for (int i = 0; i < 8; i++)
-            {
-                int index = random.Next(caracteresPermitidos.Length);
-                clave.Append(caracteresPermitidos[index]);
-            }
-            return clave.ToString();
         }
 
         //ya no es necesario los metodos send de los objetos sokect ya tienen un metodo para enviar .Send

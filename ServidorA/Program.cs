@@ -35,9 +35,9 @@ namespace ServidorA
 
             _serverRunning = true; // para entrar al ciclo infinito 
 
-            //Console.WriteLine("Servidor Proxy. Esperando conexiones...");
-            //Console.WriteLine($"Dirección Ip Ethernet del servidor: {GetLocalIPAddress()} ");
-            //Console.WriteLine($"Dirección Ip WIFI del servidor: {GetWifiIPAddress()} ");
+            Console.WriteLine("Servidor Proxy. Esperando conexiones...");
+            Console.WriteLine($"Dirección Ip Ethernet del servidor: {GetLocalIPAddress()} ");
+            Console.WriteLine($"Dirección Ip WIFI del servidor: {GetWifiIPAddress()} ");
                        
             try
             {
@@ -46,7 +46,7 @@ namespace ServidorA
                     // Esperar por una conexión
                     Socket handler = listener.Accept();
 
-                    //Console.WriteLine("Conexión aceptada desde " + handler.RemoteEndPoint);
+                    Console.WriteLine("Conexión aceptada desde " + handler.RemoteEndPoint);
 
                     // Iniciar un nuevo hilo para manejar la conexión del cliente
                     Thread thread = new Thread(() => HandleClient(handler));
@@ -55,7 +55,7 @@ namespace ServidorA
             }
             catch (Exception ex)
             {
-                //Console.WriteLine(ex.ToString());
+                Console.WriteLine(ex.ToString());
             }
             finally
             {
@@ -83,7 +83,7 @@ namespace ServidorA
 
                     int bytesRec = handler.Receive(buffer); // metodo que recibe el paquete enviado desde el socket cliente
                     data = Encoding.ASCII.GetString(buffer, 0, bytesRec); //deserealizando el paquete e introduciendolo a variable data definida arriba
-                   // Console.WriteLine("Mensaje recibido del cliente: " + data); // mostrar en consola , se puede quitar cuando esté listo el proyecto
+                    Console.WriteLine("Mensaje recibido del cliente: " + data); // mostrar en consola , se puede quitar cuando esté listo el proyecto
 
                     if (data.IndexOf("<EOF>") > -1) // sale del while si se recibe como indice <EOF>
                     {
@@ -92,7 +92,7 @@ namespace ServidorA
                     if (data == "cerrar") // si recibe cerrar cierra la conexión del cliente que envío la frase 
                     {
                         CloseConnection(handler);
-                       // Console.WriteLine("Conexión cerrada exitosamente");
+                        Console.WriteLine("Conexión cerrada exitosamente");
                         break;
                     }
                     else
@@ -104,7 +104,7 @@ namespace ServidorA
             }
             catch (Exception ex)
             {
-              //  Console.WriteLine(ex.ToString());
+                Console.WriteLine(ex.ToString());
             }
         }
                //metodo que recibe el nombre de usuario y el socket del cliente tambien el mensaje que se pasó ya deserealizado
