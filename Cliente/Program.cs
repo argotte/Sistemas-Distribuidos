@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace ClienteSocket.ProgramPractica03
@@ -37,7 +36,7 @@ namespace ClienteSocket.ProgramPractica03
                 Console.WriteLine("Conexión establecida con el servidor.");
 
                 // Leer input del usuario desde la consola
-                string message = "INTEGRIDAD\njorge_ld8\nHola Mundo";
+                string message = "FIRMAR\njorge_ld8\nHola Mundo";
                 
                 string[] words = message.Split("\n");
                 string firstWord = words[0];
@@ -54,39 +53,17 @@ namespace ClienteSocket.ProgramPractica03
                 
                 if (firstWord == "FIRMAR")
                 {
-                    byte[] sendFirmar = Encoding.ASCII.GetBytes(response);
-                    sender.Send(sendFirmar);
                     //En response estará la clave de 8 digitos del usuario
                     //Flujo de firmar que termina con escritura de un archivo de salida
                 }
-                if (firstWord == "AUTENTICAR")
+                else if (firstWord == "AUTENTICAR")
                 {
                     //Si la respuesta es "1" es VALIDO, si la respuesta es "0" es INVALIDO
                     //Flujo de autenticar que termina con escritura de un archivo de salida
                 }
-                if (firstWord == "INTEGRIDAD")
+                else if (firstWord == "INTEGRIDAD")
                 {
-                    //el mensaje aleatorio que trae response sera usado y comparado con el HASH de response.
-                    //Mensaje de ejemplo y response que seria la firma
-                    //calculamos el hash del mensaje de ejemplo localmente
-                    byte[] mensajeBytes = Encoding.ASCII.GetBytes("prueba");
-                    byte[] hashBytes;
-                    using(SHA256 sha256 = SHA256.Create()) 
-                    {
-                        hashBytes=sha256.ComputeHash(mensajeBytes);
-                    }
-                    string hash = BitConverter.ToString(hashBytes).Replace("-", "");
-
-                    //Ahora compararemos aca el hash local con el hash de la firma
-                    if(hash.Equals(response,StringComparison.OrdinalIgnoreCase))
-                    {
-                        Console.WriteLine("El mensaje es INTEGRO.");
-                    }
-                    else
-                    {
-                        Console.WriteLine("El mensaje NO es INTEGRO.");
-                    }
-
+                    
                 }
                 Console.WriteLine("Presione una tecla para continuar");
                 Console.ReadKey();

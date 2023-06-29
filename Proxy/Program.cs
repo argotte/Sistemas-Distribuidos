@@ -106,7 +106,7 @@ namespace ServidorSocket;
                     string[] words = data.Split("\n");
                     string firstWord = words[0];
 
-                    if (firstWord == "FIRMAR" || firstWord == "INTEGRIDAD")
+                    if (firstWord == "FIRMAR")
                     {
                         //Conectar con Servidor Claves puerto 5003
                         IPEndPoint endpointClaves = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5002);
@@ -127,10 +127,10 @@ namespace ServidorSocket;
                         Thread threadAuth = new Thread(() => HandleAuthConn(senderAuth));
                         threadAuth.Start();
                     }
-                    //else if (firstWord == "INTEGRIDAD")
-                    //{
-                    //    //INTEGRIDAD accion
-                    //}
+                    else if (firstWord == "INTEGRIDAD")
+                    {
+                        //INTEGRIDAD accion
+                    }
                     
                     if (data.IndexOf("<EOF>") > -1)
                         break;

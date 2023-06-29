@@ -1,9 +1,7 @@
 ﻿using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using System.Security.Cryptography;
 using System.Text;
-using Azure;
 using ProyectoConsola.Model;
 
 namespace ServidorA
@@ -148,15 +146,7 @@ namespace ServidorA
                 int index = random.Next(caracteresPermitidos.Length);
                 clave.Append(caracteresPermitidos[index]);
             }
-            //byte[] mensajeBytes = Encoding.ASCII.GetBytes(clave.ToString());
-            byte[] mensajeBytes = Encoding.ASCII.GetBytes("prueba");
-            byte[] hashBytes;
-            using (SHA256 sha256 = SHA256.Create())
-            {
-                hashBytes = sha256.ComputeHash(mensajeBytes);
-            }
-            string hash = BitConverter.ToString(hashBytes).Replace("-", "");
-            return hash;
+            return clave.ToString();
         }
 
         //metodo para cerrar la conexión de algún cliente, recibe un socket y luego cierra la conexión del mismo
