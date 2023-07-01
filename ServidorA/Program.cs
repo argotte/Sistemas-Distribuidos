@@ -31,6 +31,7 @@ namespace ServidorA
                 while (_serverRunning)
                 {
                     Socket handler = listener.Accept();
+                    Console.WriteLine("\n--------------------------------------------------------\n");
                     Console.WriteLine("Conexión aceptada desde " + handler.RemoteEndPoint);
                     Thread thread = new Thread(() => HandleClient(handler));
                     thread.Start();
@@ -115,6 +116,7 @@ namespace ServidorA
                 int index = random.Next(caracteresPermitidos.Length);
                 clave[i] = caracteresPermitidos[index];
             }
+            Console.WriteLine("\nSe le a creado la clave exitosamente");
             return new string(clave);
         }
 
