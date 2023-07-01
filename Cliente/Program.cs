@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace ClienteSocket.ProgramPractica03
@@ -10,6 +11,13 @@ namespace ClienteSocket.ProgramPractica03
         {
             try
             {
+                // while (true)
+                // {
+                //     Console.WriteLine("MENU CLIENTE");
+                //     Console.WriteLine("1. Para solicitar una clave");
+                //     Console.WriteLine("2. ");
+                //
+                // }
                 Console.ReadKey();
                 StartClient("127.0.0.1", 5000);
             }
@@ -36,7 +44,7 @@ namespace ClienteSocket.ProgramPractica03
                 Console.WriteLine("Conexión establecida con el servidor.");
 
                 // Leer input del usuario desde la consola
-                string message = "FIRMAR\njorge_ld8\nHola Mundo";
+                string message = "CLAVE\njorge_ld";
                 
                 string[] words = message.Split("\n");
                 string firstWord = words[0];
@@ -79,9 +87,17 @@ namespace ClienteSocket.ProgramPractica03
             finally
             {
                 // Cerrar el socket
-                sender.Shutdown(SocketShutdown.Both);
-                sender.Close();
+                CloseConnection(sender);
             }
+        }
+        
+        public static void CloseConnection(Socket clientSocket)
+        {
+            bool _clientRunning = false;
+            byte[] messageBytes = Encoding.ASCII.GetBytes("EOF");
+            clientSocket.Send(messageBytes);
+            clientSocket.Shutdown(SocketShutdown.Both);
+            clientSocket.Close();
         }
 
 
@@ -167,4 +183,5 @@ namespace ClienteSocket.ProgramPractica03
         //    }
         //}
     }
+    
 }

@@ -9,7 +9,7 @@ namespace ServidorA
     {
         private static bool _serverRunning = false;
         //acá la ruta del archivo TXT 
-        private static readonly UserContext _userContext = new UserContext("C:\\Users\\Daniel Toro\\Documents\\universidad\\Sistemas Distribuidos\\proyecto\\Usuarios.txt");
+        private static readonly UserContext _userContext = new ( "Usuarios.txt");
 
         static void Main(string[] args)
         {
@@ -67,9 +67,8 @@ namespace ServidorA
                     Console.WriteLine("Mensaje recibido del cliente: " + data);
 
                     if (data.IndexOf("<EOF>") > -1)
-                    {
                         break;
-                    }
+                    
                     if (data == "cerrar")
                     {
                         CloseConnection(handler);

@@ -49,7 +49,7 @@ namespace ServidorSocket;
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                Console.WriteLine(ex.Message);
             }
             finally
             {
@@ -87,60 +87,55 @@ namespace ServidorSocket;
         public static void HandleClient(Socket handler)
         {
             bool _clientRunning = true; // variable para indicar si el cliente está conectado
-
+            
+            byte[] buffer = new byte[1024];
+            string data = null;
+            Socket? handlerActual = null;
             try
             {
-                byte[] buffer = new byte[1024];
-                string data = null;
-
                 while (_clientRunning) // verificar si el cliente está conectado
                 {
                     if (!_clientRunning) // verificar si el cliente está conectado
-                    {
                         break;
-                    }
-
+                    
                     int bytesRec = handler.Receive(buffer);
-                    data += Encoding.ASCII.GetString(buffer, 0, bytesRec);
+                    data = Encoding.ASCII.GetString(buffer, 0, bytesRec);
                     Console.WriteLine("Mensaje recibido del cliente: \n" + data);
                     string[] words = data.Split("\n");
                     string firstWord = words[0];
 
-                    if (firstWord == "FIRMAR")
+                    if (firstWord == "CLAVE")
                     {
-                        //Conectar con Servidor Claves puerto 5003
+                        //Conectar con Servidor Claves puerto 5002
                         IPEndPoint endpointClaves = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5002);
-                        Socket senderClaves = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                        senderClaves.Connect(endpointClaves);
-
-                        Thread threadClaves = new Thread(() => HandleClavesConn(senderClaves, handler,  words[1]));
-                        threadClaves.Start();
+                        handlerActual = new Socket(AddressFamily.InterNetwork, SocketType.Stream,
+                            ProtocolType.Tcp);
+                        handlerActual.Connect(endpointClaves);
+                        HandleClavesConn(handlerActual, handler, words[1]);
                     }
-                    
+
                     else if (firstWord == "AUTENTICAR")
                     {
-                        //Conectar con Servidor Autenticacion puerto 5002
+                        //Conectar con Servidor Autenticacion puerto 5003
                         IPEndPoint endpointAuth = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5003);
-                        Socket senderAuth = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                        Socket senderAuth = new Socket(AddressFamily.InterNetwork, SocketType.Stream,
+                            ProtocolType.Tcp);
                         senderAuth.Connect(endpointAuth);
-            
+
                         Thread threadAuth = new Thread(() => HandleAuthConn(senderAuth));
                         threadAuth.Start();
                     }
-                    else if (firstWord == "INTEGRIDAD")
+                    if (data.IndexOf("EOF") > -1)
                     {
-                        //INTEGRIDAD accion
+                        _clientRunning = false;
+                        CloseConnection(handler);
                     }
-                    
-                    if (data.IndexOf("<EOF>") > -1)
-                        break;
-
                 }
-                CloseConnection(handler);
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                Console.WriteLine(ex.Message);
+                CloseConnection(handler);
             }
         }
 
@@ -153,6 +148,8 @@ namespace ServidorSocket;
         public static void CloseConnection(Socket clientSocket)
         {
             bool _clientRunning = false;
+            byte[] messageBytes = Encoding.ASCII.GetBytes("EOF");
+            clientSocket.Send(messageBytes);
             clientSocket.Shutdown(SocketShutdown.Both);
             clientSocket.Close();
         }

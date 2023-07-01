@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.EntityFrameworkCore;
 namespace ProyectoConsola.Model;
 
@@ -12,6 +13,7 @@ public class UserContext
 
     public User FindUser(string userName)
     {
+        if (!File.Exists(_filePath)) File.CreateText(_filePath); 
         string[] lines = File.ReadAllLines(_filePath);
         foreach (string line in lines)
         {
@@ -26,7 +28,7 @@ public class UserContext
 
     public void AddUser(User user)
     {
-        using (StreamWriter writer = File.AppendText(_filePath))
+        using (StreamWriter writer = (File.Exists(_filePath) ? File.AppendText(_filePath) : File.CreateText(_filePath)))
         {
             writer.WriteLine(user.UserName + "," + user.Clave);
         }

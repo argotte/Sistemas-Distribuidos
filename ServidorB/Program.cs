@@ -22,7 +22,7 @@ namespace ServidorB
         public static void StartServer()
         {
             // Establecer el endpoint para el socket se acordó el puerto 5002 para el servidor de claves
-            IPEndPoint endpoint = new IPEndPoint(IPAddress.Any, 5002); // 
+            IPEndPoint endpoint = new IPEndPoint(IPAddress.Any, 5003); // 
 
             // Crear un socket TCP/IP
             Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
