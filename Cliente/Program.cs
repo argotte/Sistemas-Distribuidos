@@ -14,10 +14,9 @@ namespace ClienteSocket.ProgramPractica03
             while (opcion != 0)
             {
                 Console.WriteLine("Seleccione una opcion:");
-                Console.WriteLine("1) Firmar");
+                Console.WriteLine("1) Clave");
                 Console.WriteLine("2) Autenticar");
                 Console.WriteLine("3) Integridad");
-                Console.WriteLine("4) Clave");
                 Console.WriteLine("0) Salir");
 
                 try
@@ -27,17 +26,14 @@ namespace ClienteSocket.ProgramPractica03
                     switch (opcion)
                     {
                         case 1:
-                            Console.WriteLine("Opcion de firmar seleccionada");
+                            Console.WriteLine("Opcion de clave seleccionada");
+                            CLAVE("127.0.0.1", 5000);
                             break;
                         case 2:
                             Console.WriteLine("Opcion de autenticar seleccionada");
                             break;
                         case 3:
                             Console.WriteLine("Opcion de integridad seleccionada");
-                            break;
-                        case 4:
-                            Console.WriteLine("Opcion de clave seleccionada");
-                            CLAVE("127.0.0.1", 5000);
                             break;
                         case 0:
                             Console.WriteLine("Saliendo del programa...");
