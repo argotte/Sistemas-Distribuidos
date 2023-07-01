@@ -83,7 +83,7 @@ namespace ServidorB
                     data = Encoding.ASCII.GetString(buffer, 0, bytesRec); //deserealizando el paquete e introduciendolo a variable data definida arriba
                                                                           // Console.WriteLine("Mensaje recibido del cliente: " + data); // mostrar en consola , se puede quitar cuando esté listo el proyecto
 
-                    if (data.IndexOf("<EOF>") > -1) // sale del while si se recibe como indice <EOF>
+                    if (data.IndexOf("EOF") > -1) // sale del while si se recibe como indice <EOF>
                     {
                         break;
                     }

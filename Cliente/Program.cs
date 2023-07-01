@@ -59,6 +59,11 @@ namespace ClienteSocket.ProgramPractica03
                 Console.WriteLine(response);
                 
                 
+                // Pedir clave con "CLAVE" seguido de "NOMBREUSUARIO" separados por \n
+                
+                //Pedir autenticacion "AUTENTICAR" seguido de "NOMBREUSUARIO" y "CONTRASEÑA" separados por \n
+                
+                
                 if (firstWord == "FIRMAR")
                 {
                     //En response estará la clave de 8 digitos del usuario

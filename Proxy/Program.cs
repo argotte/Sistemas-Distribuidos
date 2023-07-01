@@ -58,10 +58,10 @@ namespace ServidorSocket;
             }
         }
 
-        public static void HandleAuthConn(Socket sender)
+        public static void HandleAuthConn(Socket sender, string user, string clave)
         {
             // Enviar el mensaje al servidor
-            byte[] messageBytes = Encoding.ASCII.GetBytes("Hello from proxy server");
+            byte[] messageBytes = Encoding.ASCII.GetBytes(user + clave);
             sender.Send(messageBytes);
 
             // Recibir la respuesta del servidor y mostrarla en la consola
@@ -118,12 +118,9 @@ namespace ServidorSocket;
                     {
                         //Conectar con Servidor Autenticacion puerto 5003
                         IPEndPoint endpointAuth = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5003);
-                        Socket senderAuth = new Socket(AddressFamily.InterNetwork, SocketType.Stream,
-                            ProtocolType.Tcp);
+                        Socket senderAuth = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                         senderAuth.Connect(endpointAuth);
-
-                        Thread threadAuth = new Thread(() => HandleAuthConn(senderAuth));
-                        threadAuth.Start();
+                        HandleAuthConn(senderAuth, words[1], words[2]);
                     }
                     if (data.IndexOf("EOF") > -1)
                     {
