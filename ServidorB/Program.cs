@@ -5,15 +5,13 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using ProyectoConsola.Model;
 
-namespace ServidorSocket
+namespace ServidorB
 {
-
-
     class Servidor
     {
         //inyección de dependencias para ser usadas 
         private static bool _serverRunning = false; // pasa estar en el ciclo infinito
-        private static readonly UserContext _dbContext = new(); // instanca al DbContext ubicado en proyectoConsola 
+        private static readonly UserContext _userContext = new UserContext("C:\\Users\\Daniel Toro\\Documents\\universidad\\Sistemas Distribuidos\\proyecto\\Usuarios.txt"); // instanca al DbContext ubicado en proyectoConsola 
 
         //clase main donde se inicia el proyecto A
         static void Main(string[] args)
@@ -24,7 +22,7 @@ namespace ServidorSocket
         public static void StartServer()
         {
             // Establecer el endpoint para el socket se acordó el puerto 5002 para el servidor de claves
-            IPEndPoint endpoint = new IPEndPoint(IPAddress.Any, 5003); // 
+            IPEndPoint endpoint = new IPEndPoint(IPAddress.Any, 5002); // 
 
             // Crear un socket TCP/IP
             Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -108,21 +106,26 @@ namespace ServidorSocket
             }
         }
         //metodo que recibe el nombre de usuario y el socket del cliente tambien el mensaje que se pasó ya deserealizado
-        //realiza una conexión a la BD y comprueba que que existe el user de no existir lo crea en la BD
+        //realiza una consulta al archivo userContext si existe retorna valido sino false.
         public static void HandleClavesConn(Socket sender, string data)
         {
-            // Separar el nombre de usuario y la contraseña
-            string[] parts = data.Split(' ');
-            string username = parts[0];
-            string password = parts[1];
+            string[] credentials = data.Split(" ");
+            string username = credentials[0];
 
-            // Buscar el usuario en la base de datos
-            var usuario = _dbContext.Users.FirstOrDefault(u => u.UserName == username);
-           
-            byte[] messageBytes = Encoding.ASCII.GetBytes(usuario != null && usuario.Clave == password ? "1" : "0");
-            sender.Send(messageBytes);
+            User user = _userContext.FindUser(username);
+
+            if (user != null && user.Clave == credentials[1])
+            {
+                byte[] messageBytes = Encoding.ASCII.GetBytes("valido");
+                sender.Send(messageBytes);
+            }
+            else
+            {
+                byte[] messageBytes = Encoding.ASCII.GetBytes("Invalido");
+                sender.Send(messageBytes);
+            }
         }
-        
+
         //metodo para cerrar la conexión de algún cliente, recibe un socket y luego cierra la conexión del mismo
         public static void CloseConnection(Socket clientSocket)
         {
