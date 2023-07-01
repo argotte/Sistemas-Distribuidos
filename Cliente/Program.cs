@@ -9,27 +9,54 @@ namespace ClienteSocket.ProgramPractica03
     {
         static void Main(string[] args)
         {
-            try
+            int opcion = -1;
+
+            while (opcion != 0)
             {
-                // while (true)
-                // {
-                //     Console.WriteLine("MENU CLIENTE");
-                //     Console.WriteLine("1. Para solicitar una clave");
-                //     Console.WriteLine("2. ");
-                //
-                // }
-                Console.ReadKey();
-                StartClient("127.0.0.1", 5000);
+                Console.WriteLine("Seleccione una opcion:");
+                Console.WriteLine("1) Firmar");
+                Console.WriteLine("2) Autenticar");
+                Console.WriteLine("3) Integridad");
+                Console.WriteLine("4) Clave");
+                Console.WriteLine("0) Salir");
+
+                try
+                {
+                    opcion = Convert.ToInt32(Console.ReadLine());
+
+                    switch (opcion)
+                    {
+                        case 1:
+                            Console.WriteLine("Opcion de firmar seleccionada");
+                            break;
+                        case 2:
+                            Console.WriteLine("Opcion de autenticar seleccionada");
+                            break;
+                        case 3:
+                            Console.WriteLine("Opcion de integridad seleccionada");
+                            break;
+                        case 4:
+                            Console.WriteLine("Opcion de clave seleccionada");
+                            CLAVE("127.0.0.1", 5000);
+                            break;
+                        case 0:
+                            Console.WriteLine("Saliendo del programa...");
+                            break;
+                        default:
+                            Console.WriteLine("Opcion no valida");
+                            break;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Error: " + e.Message);
+                }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            
             Console.WriteLine("Programa finalizado");
         }
 
-        public static void StartClient(string? ipAddr, int portNum)
+
+        public static void CLAVE(string? ipAddr, int portNum)
         {
             // Establecer el endpoint para el socket
             IPEndPoint endpoint = new IPEndPoint(IPAddress.Parse(ipAddr!), portNum);
@@ -63,21 +90,6 @@ namespace ClienteSocket.ProgramPractica03
                 
                 //Pedir autenticacion "AUTENTICAR" seguido de "NOMBREUSUARIO" y "CONTRASEÑA" separados por \n
                 
-                
-                if (firstWord == "FIRMAR")
-                {
-                    //En response estará la clave de 8 digitos del usuario
-                    //Flujo de firmar que termina con escritura de un archivo de salida
-                }
-                else if (firstWord == "AUTENTICAR")
-                {
-                    //Si la respuesta es "1" es VALIDO, si la respuesta es "0" es INVALIDO
-                    //Flujo de autenticar que termina con escritura de un archivo de salida
-                }
-                else if (firstWord == "INTEGRIDAD")
-                {
-                    
-                }
                 Console.WriteLine("Presione una tecla para continuar");
                 Console.ReadKey();
             }
@@ -116,7 +128,7 @@ namespace ClienteSocket.ProgramPractica03
         //        {
         //            while (true)
         //            {
-        //                StartClient("192.168.56.1", 5002);
+        //                CLAVE("192.168.56.1", 5002);
         //            }
         //        }
         //        catch (Exception ex)
@@ -129,7 +141,7 @@ namespace ClienteSocket.ProgramPractica03
         //        Console.WriteLine("Programa finalizado");
         //    }
 
-        //    public static void StartClient(string? ipAddr, int portNum)
+        //    public static void CLAVE(string? ipAddr, int portNum)
         //    {
         //        // Establecer el endpoint para el socket
         //        IPEndPoint endpoint = new IPEndPoint(IPAddress.Parse(ipAddr!), portNum);
@@ -190,3 +202,12 @@ namespace ClienteSocket.ProgramPractica03
     }
     
 }
+
+
+//                Console.WriteLine("Conexión establecida con el servidor.");
+                //Console.WriteLine("Ingrese su nombre de usuario de FIRMA:");
+                //string username = Console.ReadLine();
+                //Console.WriteLine("Ingrese su mensaje de FIRMA:");
+                //string message = Console.ReadLine();
+                //string usernamemessage = "FIRMA\n"+username + "\n" + message;
+                //Console.WriteLine("Mensaje se enviará como:\n" + usernamemessage);
