@@ -29,6 +29,10 @@ class Cliente
                 Console.WriteLine("║                                                     ║");
                 Console.WriteLine("║ 3) Integridad                                       ║");
                 Console.WriteLine("║                                                     ║");
+                Console.WriteLine("║ 4) Enviar Mensaje a Cliente                         ║");
+                Console.WriteLine("║                                                     ║");
+                Console.WriteLine("║ 5) Recibir Mensaje de Cliente                       ║");
+                Console.WriteLine("║                                                     ║");
                 Console.WriteLine("║ 0) Salir                                            ║");
                 Console.WriteLine("║                                                     ║");
                 Console.WriteLine("╚═══════════════════════════════════════════════════╝");
@@ -51,6 +55,20 @@ class Cliente
                         case 3:
                             Console.WriteLine("\nOpcion de integridad seleccionada");
                             Integridad("127.0.0.1", 5000);
+                            break;
+                        case 4:
+                            Console.WriteLine("\nOpcion de Envio de Mensajes con Cliente seleccionada");
+                            Console.WriteLine("Introduzca la direccion ip del cliente:");
+                            string ipAddr = Console.ReadLine();
+                            Console.WriteLine("Introduzca el puerto: ");
+                            string portNum = Console.ReadLine();
+                            ClienteMensajesConnect(ipAddr, int.Parse(portNum));
+                            break;
+                        case 5:
+                            Console.WriteLine("\nOpcion de Recepcion de Mensajes con Cliente seleccionada");
+                            Console.WriteLine("Introduzca el puerto: ");
+                            string portNumR = Console.ReadLine();
+                            ClienteMensajesListen(IPAddress.Any.ToString(), int.Parse(portNumR));
                             break;
                         case 0:
                             Console.WriteLine("\nSaliendo del programa...");
@@ -324,7 +342,7 @@ class Cliente
             // Convierte el hash a un string hexadecimal
             string firma = BitConverter.ToString(hash).Replace("-", "");
             return firma;
-     }
+        }
 
     /// <summary>
     /// Verifica la integridad de un texto firmado utilizando la clave del usuario.
@@ -344,31 +362,104 @@ class Cliente
                 string firma = BitConverter.ToString(computedHash).Replace("-", "");
                 return String.Equals(textoFirmado, firma);
             }
-    }
+        }
 
-    // private static string SignText2(string texto, string clave)
-    // {
-    //     byte[] hash;
-    //     using (SHA256 sha256 = SHA256.Create())
-    //     {
-    //         byte[] data = Encoding.UTF8.GetBytes(texto);
-    //         hash = sha256.ComputeHash(data);
-    //     }
-    //
-    //     byte[] signature;
-    //     using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(2048))
-    //     {
-    //         rsa.ImportParameters(new RSAParameters
-    //         {
-    //             D = Encoding.UTF8.GetBytes(clave),
-    //             Exponent = new byte[] {1, 0, 1}
-    //         });
-    //
-    //         signature = rsa.SignHash(hash, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-    //     }
-    //
-    //     return BitConverter.ToString(signature).Replace("-", "");;
-    // }
+        public static void ClienteMensajesConnect(string? ipAddr, int portNum)
+        {
+            IPEndPoint endpoint = new IPEndPoint(IPAddress.Parse(ipAddr!), portNum);
+            // Crear un socket TCP/IP
+            Socket sender = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            int cont = 0;
+            bool blockingState = true;
+            while (blockingState && cont++ < 5) 
+            {
+                try
+                {
+                    sender.Connect(endpoint);
+                    Console.WriteLine("Conexión establecida con el servidor.");
+                    HandleClient(sender);
+                    blockingState = false;
+                }
+                catch (SocketException)
+                {
+                    Console.WriteLine($"Intento {cont} de conexion fallido");
+                    Thread.Sleep(2000);
+                }
+            }
+        }
+        
+        public static void ClienteMensajesListen(string? ipAddr, int portNum)
+        {
+            IPEndPoint endpoint = new IPEndPoint(IPAddress.Parse(ipAddr!), portNum);
+            
+            // Crear un socket TCP/IP
+            Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+            // Vincular el socket a un endpoint y escuchar por conexiones
+            listener.Bind(endpoint);
+            listener.Listen(2);
+            Socket handler = listener.Accept();
+            HandleClientIncoming(handler);
+            CloseConnection(handler);
+        }
+
+        private static void HandleClientIncoming(Socket handler)
+        {
+            while (true)
+            {
+                // Recibir la respuesta del servidor y mostrarla en la consola
+                byte[] responseBytes = new byte[1024];
+                int bytesRec = handler.Receive(responseBytes);
+                string response = Encoding.ASCII.GetString(responseBytes, 0, bytesRec);
+                if (response == "EOF")
+                {
+                    CloseConnection(handler);
+                    break;
+                }
+                
+                Console.WriteLine("Respuesta Recibida del cliente: " + response);
+                
+                Console.WriteLine("Introduzca mensaje para el otro cliente: ");
+                string msg = Console.ReadLine();
+                if (msg == "EOF")
+                {
+                    CloseConnection(handler);
+                    break;
+                }
+                byte[] messageBytes = Encoding.ASCII.GetBytes(msg);
+                handler.Send(messageBytes);
+            }
+        }
+
+        private static void HandleClient(Socket handler)
+        {
+            while (true)
+            {
+                Console.Write("Introduzca mensaje para el otro cliente: ");
+                string msg = Console.ReadLine();
+
+                if (msg == "EOF")
+                {
+                    CloseConnection(handler);
+                    break;
+                }
+                
+                handler.Send(Encoding.ASCII.GetBytes(msg));
+
+                // Recibir la respuesta del servidor y mostrarla en la consola
+                byte[] responseBytes = new byte[1024];
+                int bytesRec = handler.Receive(responseBytes);
+                string response = Encoding.ASCII.GetString(responseBytes, 0, bytesRec);
+
+                if (response == "EOF")
+                {
+                    CloseConnection(handler);
+                    break;
+                }
+                
+                Console.WriteLine("Respuesta Recibida del cliente: " + response);
+            }
+        }
 
     /// <summary>
     /// Función que cierra la conexión con el servidor remoto.
