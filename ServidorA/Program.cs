@@ -9,7 +9,7 @@ namespace ServidorA
     {
         private static bool _serverRunning = false;
         //acá la ruta del archivo TXT 
-        private static readonly UserContext _userContext = new ("C:\\Users\\Diego\\Desktop\\distribuidos\\Usuarios.txt");
+        private static readonly UserContext _userContext = new("Usuarios.txt");
 
         static void Main(string[] args)
         {

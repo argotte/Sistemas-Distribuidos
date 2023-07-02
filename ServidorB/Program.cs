@@ -11,7 +11,7 @@ namespace ServidorB
     {
         //inyección de dependencias para ser usadas 
         private static bool _serverRunning = false; // pasa estar en el ciclo infinito
-        private static readonly UserContext _userContext = new UserContext("C:\\Users\\Diego\\Desktop\\distribuidos\\Usuarios.txt"); // instanca al DbContext ubicado en proyectoConsola 
+        private static readonly UserContext _userContext = new("Usuarios.txt");
 
         //clase main donde se inicia el proyecto A
         static void Main(string[] args)
