@@ -1,8 +1,8 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
-
 namespace ClienteSocket.ProgramPractica03
 {
     class Cliente
@@ -86,10 +86,12 @@ namespace ClienteSocket.ProgramPractica03
                 string message = "CLAVE\n";
                 Console.WriteLine("Ingrese su nombre de usuario: ");
                 string username = Console.ReadLine();
-                message = message+username;
+                message = message + username;
+                Console.WriteLine("Escriba su texto a firmar: ");
+                string texto = Console.ReadLine();
                 string[] words = message.Split("\n");
                 string firstWord = words[0];
-                
+
                 // Enviar el mensaje al servidor
                 byte[] messageBytes = Encoding.ASCII.GetBytes(message);
                 sender.Send(messageBytes);
@@ -97,15 +99,24 @@ namespace ClienteSocket.ProgramPractica03
                 byte[] responseBytes = new byte[1024];
                 int bytesRec = sender.Receive(responseBytes);
                 string response = Encoding.ASCII.GetString(responseBytes, 0, bytesRec);
-                Console.WriteLine(response);
-                
-                
-                // Pedir clave con "Clave" seguido de "NOMBREUSUARIO" separados por \n
-                
-                //Pedir autenticacion "Autenticar" seguido de "NOMBREUSUARIO" y "CONTRASEÑA" separados por \n
-                
-                Console.WriteLine("Presione una tecla para continuar");
-                Console.ReadKey();
+                Console.WriteLine($"Clave: {response}");
+
+                //A partir de aca se empieza a firmar el texto
+                // Convierte el mensaje y la clave a arreglos de bytes
+                byte[] mensajeBytes = Encoding.UTF8.GetBytes(message);
+                byte[] claveBytes = Encoding.UTF8.GetBytes(response);
+
+                // Crea un objeto HMACSHA256 usando la clave
+                HMACSHA256 hmac = new HMACSHA256(claveBytes);
+
+                // Calcula el hash del mensaje usando el hmac
+                byte[] hash = hmac.ComputeHash(mensajeBytes);
+
+                // Convierte el hash a un string hexadecimal
+                string firma = BitConverter.ToString(hash).Replace("-", "");
+
+                // Devuelve la firma
+                Console.WriteLine($"Firma: {firma}");
             }
             catch (SocketException socketEx)
             {
