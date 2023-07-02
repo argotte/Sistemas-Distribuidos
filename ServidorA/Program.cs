@@ -108,7 +108,7 @@ namespace ServidorA
 
         private static string GenerarClaveAleatoria()
         {
-            const string caracteresPermitidos = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            const string caracteresPermitidos = "0123456789";
             var random = new Random();
             var clave = new char[8];
             for (int i = 0; i < clave.Length; i++)

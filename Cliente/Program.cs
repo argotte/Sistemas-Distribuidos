@@ -45,6 +45,7 @@ class Cliente
                             break;
                         case 3:
                             Console.WriteLine("\nOpcion de integridad seleccionada");
+                            Integridad("127.0.0.1", 5000);
                             break;
                         case 0:
                             Console.WriteLine("\nSaliendo del programa...");
@@ -100,7 +101,8 @@ class Cliente
                         return;
                     }
                 }
-                Console.WriteLine($"Clave: {response}");
+                else
+                    Console.WriteLine($"Clave: {response}");
 
                 //Firmar texto
                 Console.WriteLine("Escriba su texto a firmar: ");
@@ -162,6 +164,43 @@ class Cliente
                 CloseConnection(sender);
             }
         }
+        
+        public static void Integridad(string? ipAddr, int portNum)
+        {
+            // Establecer el endpoint para el socket
+            IPEndPoint endpoint = new IPEndPoint(IPAddress.Parse(ipAddr!), portNum);
+
+            // Crear un socket TCP/IP
+            Socket sender = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+            try
+            {
+                // Conectar el socket al endpoint remoto
+                sender.Connect(endpoint);
+                Console.WriteLine("Conexión establecida con el servidor.");
+
+                // Clave privada usuario
+                Console.WriteLine("Ingrese su clave: ");
+                string? clave = Console.ReadLine();
+                Console.WriteLine("Ingrese el texto del mensaje: ");
+                string? texto = Console.ReadLine();
+                Console.WriteLine("Ingrese el texto del mensaje firmado: ");
+                string? textoFirmado = Console.ReadLine();
+                Console.WriteLine( VerifyText(texto, textoFirmado, clave) ? "MENSAJE INTEGRO": "MENSAJE NO INTEGRO");
+            }
+            catch (SocketException socketEx)
+            {
+                Console.WriteLine($"SOCKET ERROR: {socketEx.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                CloseConnection(sender);
+            }
+        }
 
         private static bool SendAuthRequest(Socket sender, string username, string clave)
         {
@@ -208,6 +247,42 @@ class Cliente
             return firma;
         }
 
+        private static bool VerifyText(string texto, string textoFirmado, string clave)
+        {
+            byte[] mensajeBytes = Encoding.UTF8.GetBytes(texto);
+            byte[] claveBytes = Encoding.UTF8.GetBytes(clave);
+
+            using (HMACSHA256 hmac = new HMACSHA256(claveBytes))
+            {
+                byte[] computedHash = hmac.ComputeHash(mensajeBytes);
+                string firma = BitConverter.ToString(computedHash).Replace("-", "");
+                return String.Equals(textoFirmado, firma);
+            }
+        }
+
+        // private static string SignText2(string texto, string clave)
+        // {
+        //     byte[] hash;
+        //     using (SHA256 sha256 = SHA256.Create())
+        //     {
+        //         byte[] data = Encoding.UTF8.GetBytes(texto);
+        //         hash = sha256.ComputeHash(data);
+        //     }
+        //
+        //     byte[] signature;
+        //     using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(2048))
+        //     {
+        //         rsa.ImportParameters(new RSAParameters
+        //         {
+        //             D = Encoding.UTF8.GetBytes(clave),
+        //             Exponent = new byte[] {1, 0, 1}
+        //         });
+        //
+        //         signature = rsa.SignHash(hash, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        //     }
+        //
+        //     return BitConverter.ToString(signature).Replace("-", "");;
+        // }
 
         public static void CloseConnection(Socket clientSocket)
         {
