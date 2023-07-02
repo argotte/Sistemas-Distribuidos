@@ -55,10 +55,10 @@ namespace ServidorSocket;
             }
         }
 
-        public static void HandleAuthConn(Socket sender, string user, string clave)
+        public static void HandleAuthConn(Socket sender,Socket handlerServer, string user, string clave)
         {
             // Enviar el mensaje al servidor
-            byte[] messageBytes = Encoding.ASCII.GetBytes(user + clave);
+            byte[] messageBytes = Encoding.ASCII.GetBytes(user +"\n"+ clave);
             sender.Send(messageBytes);
 
             // Recibir la respuesta del servidor y mostrarla en la consola
@@ -66,9 +66,11 @@ namespace ServidorSocket;
             int bytesRec = sender.Receive(responseBytes);
             string response = Encoding.ASCII.GetString(responseBytes, 0, bytesRec);
             Console.WriteLine(response);
-        }
-        
-        public static void HandleClavesConn(Socket sender, Socket handlerServer, string clave)
+            SendToClient(handlerServer, response);
+
+    }
+
+    public static void HandleClavesConn(Socket sender, Socket handlerServer, string clave)
         {
             // Enviar el mensaje al servidor
             byte[] messageBytes = Encoding.ASCII.GetBytes(clave);
@@ -117,7 +119,7 @@ namespace ServidorSocket;
                         IPEndPoint endpointAuth = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5003);
                         Socket senderAuth = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                         senderAuth.Connect(endpointAuth);
-                        HandleAuthConn(senderAuth, words[1], words[2]);
+                        HandleAuthConn(senderAuth,handler, words[1], words[2]);
                     }
                     if (data.IndexOf("EOF") > -1)
                     {

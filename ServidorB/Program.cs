@@ -11,7 +11,7 @@ namespace ServidorB
     {
         //inyección de dependencias para ser usadas 
         private static bool _serverRunning = false; // pasa estar en el ciclo infinito
-        private static readonly UserContext _userContext = new UserContext("C:\\Users\\Daniel Toro\\Documents\\universidad\\Sistemas Distribuidos\\proyecto\\Usuarios.txt"); // instanca al DbContext ubicado en proyectoConsola 
+        private static readonly UserContext _userContext = new UserContext("C:\\Users\\Diego\\Desktop\\distribuidos\\Usuarios.txt"); // instanca al DbContext ubicado en proyectoConsola 
 
         //clase main donde se inicia el proyecto A
         static void Main(string[] args)
@@ -81,7 +81,7 @@ namespace ServidorB
 
                     int bytesRec = handler.Receive(buffer); // metodo que recibe el paquete enviado desde el socket cliente
                     data = Encoding.ASCII.GetString(buffer, 0, bytesRec); //deserealizando el paquete e introduciendolo a variable data definida arriba
-                                                                          // Console.WriteLine("Mensaje recibido del cliente: " + data); // mostrar en consola , se puede quitar cuando esté listo el proyecto
+                    Console.WriteLine("Mensaje recibido del cliente: " + data); // mostrar en consola , se puede quitar cuando esté listo el proyecto
 
                     if (data.IndexOf("EOF") > -1) // sale del while si se recibe como indice <EOF>
                     {
@@ -96,7 +96,6 @@ namespace ServidorB
                     else
                     {
                         HandleClavesConn(handler, data); // metodo que revisa el nombreUSURIO 
-
                     }
                 }
             }
@@ -109,7 +108,7 @@ namespace ServidorB
         //realiza una consulta al archivo userContext si existe retorna valido sino false.
         public static void HandleClavesConn(Socket sender, string data)
         {
-            string[] credentials = data.Split(" ");
+            string[] credentials = data.Split("\n");
             string username = credentials[0];
 
             User user = _userContext.FindUser(username);

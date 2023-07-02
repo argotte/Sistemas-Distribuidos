@@ -147,8 +147,14 @@ namespace ClienteSocket.ProgramPractica03
                 Console.WriteLine("Conexión establecida con el servidor.");
 
                 // Leer input del usuario desde la consola
-                string message = "CLAVE\njorge_ld";
-
+                string message = "AUTENTICAR\n";
+                Console.WriteLine("Ingrese su nombre de usuario a autenticar: ");
+                string username = Console.ReadLine();
+                username = username + "\n";
+                message = message + username;
+                Console.WriteLine("Ingrese la clave del usuario a autenticar: ");
+                string texto = Console.ReadLine();
+                message = message + texto;
                 string[] words = message.Split("\n");
                 string firstWord = words[0];
 
