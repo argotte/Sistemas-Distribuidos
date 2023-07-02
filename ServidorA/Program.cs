@@ -13,7 +13,7 @@ namespace ServidorA
         private static bool _serverRunning = false;
         //acá la ruta del archivo TXT 
         //private static readonly UserContext _userContext = new("/home/jorgegetsmad/RiderProjects/SistemasDistribuidosProyecto/ServidorB/bin/Debug/net6.0/Usuarios.txt");
-        private static readonly UserContext _userContext = new("C:\\Users\\Daniel Toro\\Documents\\universidad\\Sistemas Distribuidos\\proyecto\\Usuarios.txt");
+        private static readonly UserContext _userContext = new(EnsureDirectoryAndFileExist());
 
         static void Main(string[] args)
         {
@@ -148,6 +148,30 @@ namespace ServidorA
         {
             clientSocket.Shutdown(SocketShutdown.Both);
             clientSocket.Close();
+        }
+
+        public static string EnsureDirectoryAndFileExist()
+        {
+            string folderName = "psd_2023";
+            string fileName = "Usuarios.txt";
+
+            string myDocumentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string folderPath = Path.Combine(myDocumentsPath, folderName);
+            string filePath = Path.Combine(folderPath, fileName);
+
+            if (!Directory.Exists(folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
+                Console.WriteLine($"Carpeta {folderPath} creada.");
+            }
+
+            if (!File.Exists(filePath))
+            {
+                File.Create(filePath).Close();
+                Console.WriteLine($"Archivo {filePath} creado.");
+            }
+
+            return filePath;
         }
     }    
 }

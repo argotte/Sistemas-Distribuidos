@@ -130,7 +130,7 @@ class Cliente
                 string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 
                 // Combinar la ruta de la carpeta de documentos con el nombre de la carpeta y el archivo de firma
-                string folderPath = Path.Combine(documentsPath, "psb_2023");
+                string folderPath = Path.Combine(documentsPath, "psd_2023");
                 string filePath = Path.Combine(folderPath, "firmas.txt");
 
                 // Crear la carpeta si no existe

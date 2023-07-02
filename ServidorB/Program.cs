@@ -15,7 +15,7 @@ namespace ServidorB
         //inyección de dependencias para ser usadas 
         private static bool _serverRunning = false; // pasa estar en el ciclo infinito
         //private static readonly UserContext _userContext = new("/home/jorgegetsmad/RiderProjects/SistemasDistribuidosProyecto/ServidorB/bin/Debug/net6.0/Usuarios.txt");
-        private static readonly UserContext _userContext = new("C:\\Users\\Daniel Toro\\Documents\\universidad\\Sistemas Distribuidos\\proyecto\\Usuarios.txt");
+        private static readonly UserContext _userContext = new(EnsureDirectoryAndFileExist());
 
         //clase main donde se inicia el proyecto A
         static void Main(string[] args)
@@ -101,7 +101,7 @@ namespace ServidorB
                     if (data == "cerrar") // si recibe cerrar cierra la conexión del cliente que envío la frase 
                     {
                         CloseConnection(handler);
-                         Console.WriteLine("Conexión cerrada exitosamente");
+                        Console.WriteLine("Conexión cerrada exitosamente");
                         break;
                     }
                     else
@@ -112,7 +112,7 @@ namespace ServidorB
             }
             catch (Exception ex)
             {
-                 Console.WriteLine(ex.ToString());
+                Console.WriteLine(ex.ToString());
             }
         }
 
@@ -184,6 +184,31 @@ namespace ServidorB
             var wifiIp = ipProps.UnicastAddresses.FirstOrDefault(a => a.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
 
             return wifiIp?.Address.ToString();
+        }
+
+
+        public static string EnsureDirectoryAndFileExist()
+        {
+            string folderName = "psd_2023";
+            string fileName = "Usuarios.txt";
+
+            string myDocumentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string folderPath = Path.Combine(myDocumentsPath, folderName);
+            string filePath = Path.Combine(folderPath, fileName);
+
+            if (!Directory.Exists(folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
+                Console.WriteLine($"Carpeta {folderPath} creada.");
+            }
+
+            if (!File.Exists(filePath))
+            {
+                File.Create(filePath).Close();
+                Console.WriteLine($"Archivo {filePath} creado.");
+            }
+
+            return filePath;
         }
     }
 }
