@@ -7,8 +7,8 @@ using System.Text;
 
 namespace ClienteSocket.ProgramPractica03;
 class Cliente
-    {
-
+{
+    public static StreamWriter writer = new ("archivoSalida.txt");
     /// <summary>
     /// Función principal del cliente que presenta un menú con tres opciones y permite al usuario seleccionar una opción ingresando el número correspondiente en la consola.
     /// </summary>
@@ -130,6 +130,7 @@ class Cliente
             }
             else
                 Console.WriteLine($"Clave: {response}");
+            writer.WriteLine(response);
 
             //Firmar texto
             Console.WriteLine("Escriba su texto a firmar: ");
@@ -137,6 +138,7 @@ class Cliente
             // Devuelve la firma
             string firma = SignText(texto, response);
             Console.WriteLine($"Firma: {firma}");
+            writer.WriteLine(firma);
 
             // Guardar la firma en un archivo de texto en la carpeta de documentos del usuario
             Console.WriteLine("¿Desea guardar la firma en un archivo de texto? [y/n]");
@@ -220,6 +222,7 @@ class Cliente
 
                 bool authResponse = SendAuthRequest(sender, username, clave);
                 Console.WriteLine(authResponse ? "VALIDO" : "INVALIDO");
+                writer.WriteLine(authResponse ? "VALIDO" : "INVALIDO");
 
                 Console.WriteLine("Presione una tecla para continuar");
                 Console.ReadKey();
@@ -257,14 +260,17 @@ class Cliente
                 sender.Connect(endpoint);
                 Console.WriteLine("Conexión establecida con el servidor.");
 
-                // Clave privada usuario
+                // Recibir inputs
                 Console.WriteLine("Ingrese su clave: ");
                 string? clave = Console.ReadLine();
                 Console.WriteLine("Ingrese el texto del mensaje: ");
                 string? texto = Console.ReadLine();
                 Console.WriteLine("Ingrese el texto del mensaje firmado: ");
                 string? textoFirmado = Console.ReadLine();
+                
+                //Mostrar y escribir en archivo de salida
                 Console.WriteLine( VerifyText(texto, textoFirmado, clave) ? "MENSAJE INTEGRO": "MENSAJE NO INTEGRO");
+                writer.WriteLine( VerifyText(texto, textoFirmado, clave) ? "INTEGRO" : "NO INTEGRO");
             }
             catch (SocketException socketEx)
             {
