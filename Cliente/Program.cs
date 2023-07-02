@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
-namespace ClienteSocket.ProgramPractica03
-{
-    class Cliente
+
+namespace ClienteSocket.ProgramPractica03;
+class Cliente
     {
         static void Main(string[] args)
         {
@@ -17,7 +18,7 @@ namespace ClienteSocket.ProgramPractica03
                 Console.WriteLine("║                 Seleccione una opcion:              ║");
                 Console.WriteLine("╠═══════════════════════════════════════════════════╣");
                 Console.WriteLine("║                                                     ║");
-                Console.WriteLine("║ 1) Clave                                            ║");
+                Console.WriteLine("║ 1) Firmar                                           ║");
                 Console.WriteLine("║                                                     ║");
                 Console.WriteLine("║ 2) Autenticar                                       ║");
                 Console.WriteLine("║                                                     ║");
@@ -82,40 +83,30 @@ namespace ClienteSocket.ProgramPractica03
                 sender.Connect(endpoint);
                 Console.WriteLine("Conexión establecida con el servidor.");
 
-                // Leer input del usuario desde la consola
-                string message = "CLAVE\n";
+                // Clave privada usuario
                 Console.WriteLine("Ingrese su nombre de usuario: ");
                 string username = Console.ReadLine();
-                message = message + username;
-                Console.WriteLine("Escriba su texto a firmar: ");
-                string texto = Console.ReadLine();
-                string[] words = message.Split("\n");
-                string firstWord = words[0];
-
-                // Enviar el mensaje al servidor
-                byte[] messageBytes = Encoding.ASCII.GetBytes(message);
-                sender.Send(messageBytes);
-                // Recibir la respuesta del servidor y mostrarla en la consola
-                byte[] responseBytes = new byte[1024];
-                int bytesRec = sender.Receive(responseBytes);
-                string response = Encoding.ASCII.GetString(responseBytes, 0, bytesRec);
+                string? clave;
+                string response = SendKeyRequest(sender, username);
+                if (response == "Usuario ya registrado")
+                {
+                    Console.WriteLine($"Introduzca su clave: ");
+                    clave = Console.ReadLine();
+                    if (SendAuthRequest(sender, username, clave))
+                        response = clave;
+                    else
+                    {
+                        Console.WriteLine("Clave no Valida. Intente Nuevamente");
+                        return;
+                    }
+                }
                 Console.WriteLine($"Clave: {response}");
 
-                //A partir de aca se empieza a firmar el texto
-                // Convierte el mensaje y la clave a arreglos de bytes
-                byte[] mensajeBytes = Encoding.UTF8.GetBytes(texto);
-                byte[] claveBytes = Encoding.UTF8.GetBytes(response);
-
-                // Crea un objeto HMACSHA256 usando la clave
-                HMACSHA256 hmac = new HMACSHA256(claveBytes);
-
-                // Calcula el hash del mensaje usando el hmac
-                byte[] hash = hmac.ComputeHash(mensajeBytes);
-
-                // Convierte el hash a un string hexadecimal
-                string firma = BitConverter.ToString(hash).Replace("-", "");
-
+                //Firmar texto
+                Console.WriteLine("Escriba su texto a firmar: ");
+                string texto = Console.ReadLine();
                 // Devuelve la firma
+                string firma = SignText(texto, response);
                 Console.WriteLine($"Firma: {firma}");
             }
             catch (SocketException socketEx)
@@ -128,10 +119,10 @@ namespace ClienteSocket.ProgramPractica03
             }
             finally
             {
-                // Cerrar el socket
                 CloseConnection(sender);
             }
         }
+
         public static void Autenticar(string? ipAddr, int portNum)
         {
             // Establecer el endpoint para el socket
@@ -147,30 +138,13 @@ namespace ClienteSocket.ProgramPractica03
                 Console.WriteLine("Conexión establecida con el servidor.");
 
                 // Leer input del usuario desde la consola
-                string message = "AUTENTICAR\n";
                 Console.WriteLine("Ingrese su nombre de usuario a autenticar: ");
-                string username = Console.ReadLine();
-                username = username + "\n";
-                message = message + username;
+                string? username = Console.ReadLine();
                 Console.WriteLine("Ingrese la clave del usuario a autenticar: ");
-                string texto = Console.ReadLine();
-                message = message + texto;
-                string[] words = message.Split("\n");
-                string firstWord = words[0];
+                string? clave = Console.ReadLine();
 
-                // Enviar el mensaje al servidor
-                byte[] messageBytes = Encoding.ASCII.GetBytes(message);
-                sender.Send(messageBytes);
-                // Recibir la respuesta del servidor y mostrarla en la consola
-                byte[] responseBytes = new byte[1024];
-                int bytesRec = sender.Receive(responseBytes);
-                string response = Encoding.ASCII.GetString(responseBytes, 0, bytesRec);
-                Console.WriteLine(response);
-
-
-                // Pedir clave con "Clave" seguido de "NOMBREUSUARIO" separados por \n
-
-                //Pedir autenticacion "Autenticar" seguido de "NOMBREUSUARIO" y "CONTRASEÑA" separados por \n
+                bool authResponse = SendAuthRequest(sender, username, clave);
+                Console.WriteLine(authResponse ? "VALIDO" : "INVALIDO");
 
                 Console.WriteLine("Presione una tecla para continuar");
                 Console.ReadKey();
@@ -185,9 +159,53 @@ namespace ClienteSocket.ProgramPractica03
             }
             finally
             {
-                // Cerrar el socket
                 CloseConnection(sender);
             }
+        }
+
+        private static bool SendAuthRequest(Socket sender, string username, string clave)
+        {
+            //Enviar mensaje al servidor
+            string message = $"AUTENTICAR\n{username}\n{clave}";
+            byte[] messageBytes = Encoding.ASCII.GetBytes(message);
+
+            //Recibir mensaje servidor
+            sender.Send(messageBytes);
+            byte[] responseBytes = new byte[1024];
+            int bytesRec = sender.Receive(responseBytes);
+            string response = Encoding.ASCII.GetString(responseBytes, 0, bytesRec);
+            return response == "1";
+        }
+
+        private static string SendKeyRequest(Socket sender, string? username)
+        {
+            //Enviar mensaje al servidor
+            string message = $"CLAVE\n{username}";
+            byte[] messageBytes = Encoding.ASCII.GetBytes(message);
+
+            //Recibir mensaje servidor
+            sender.Send(messageBytes);
+            byte[] responseBytes = new byte[1024];
+            int bytesRec = sender.Receive(responseBytes);
+            string response = Encoding.ASCII.GetString(responseBytes, 0, bytesRec);
+            return response;
+        }
+
+        private static string SignText(string texto, string clave)
+        {
+            // Convierte el mensaje y la clave a arreglos de bytes
+            byte[] mensajeBytes = Encoding.UTF8.GetBytes(texto);
+            byte[] claveBytes = Encoding.UTF8.GetBytes(clave);
+
+            // Crea un objeto HMACSHA256 usando la clave
+            HMACSHA256 hmac = new HMACSHA256(claveBytes);
+
+            // Calcula el hash del mensaje usando el hmac
+            byte[] hash = hmac.ComputeHash(mensajeBytes);
+
+            // Convierte el hash a un string hexadecimal
+            string firma = BitConverter.ToString(hash).Replace("-", "");
+            return firma;
         }
 
 
@@ -199,98 +217,4 @@ namespace ClienteSocket.ProgramPractica03
             clientSocket.Shutdown(SocketShutdown.Both);
             clientSocket.Close();
         }
-
-
-        //esta se usa cuando sea el servidor B, la tarea que realizaría el proxy que es redirigir dependiendo el caso
-        //. 
-        //class Cliente
-        //{
-        //    static void Main(string[] args)
-        //    {
-        //        try
-        //        {
-        //            while (true)
-        //            {
-        //                Clave("192.168.56.1", 5002);
-        //            }
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            Console.WriteLine(ex.Message);
-        //        }
-        //        // Esperar a que el usuario presione Enter para salir
-        //        // Console.WriteLine("Presione Enter para salir.");
-        //        // Console.ReadLine();
-        //        Console.WriteLine("Programa finalizado");
-        //    }
-
-        //    public static void Clave(string? ipAddr, int portNum)
-        //    {
-        //        // Establecer el endpoint para el socket
-        //        IPEndPoint endpoint = new IPEndPoint(IPAddress.Parse(ipAddr!), portNum);
-
-        //        // Crear un socket TCP/IP
-        //        Socket sender = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-
-        //        try
-        //        {
-        //            // Conectar el socket al endpoint remoto
-        //            sender.Connect(endpoint);
-        //            Console.WriteLine("Conexión establecida con el servidor.");
-
-        //            while (true)
-        //            {
-        //                // Leer el nombre de usuario desde la consola
-        //                Console.WriteLine("Ingrese el nombre de usuario: ");
-        //                string username = Console.ReadLine();
-
-        //                // Leer la contraseña desde la consola
-        //                Console.WriteLine("Ingrese la contraseña: ");
-        //                string password = Console.ReadLine();
-
-        //                // Concatenar el nombre de usuario y la contraseña en una sola cadena separada por un espacio
-        //                string message = $"{username} {password}";
-
-        //                // Enviar el mensaje al servidor
-        //                byte[] messageBytes = Encoding.ASCII.GetBytes(message);
-        //                sender.Send(messageBytes);
-
-        //                // Limpiar la variable message
-        //                message = "";
-
-        //                // Recibir la respuesta del servidor y mostrarla en la consola
-        //                byte[] responseBytes = new byte[1024];
-        //                int bytesRec = sender.Receive(responseBytes);
-        //                string response = Encoding.ASCII.GetString(responseBytes, 0, bytesRec);
-        //                Console.WriteLine(response);
-
-        //            }
-        //        }
-        //        catch (SocketException socketEx)
-        //        {
-        //            Console.WriteLine($"SOCKET ERROR: {socketEx.Message}");
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            Console.WriteLine(ex.Message);
-        //        }
-        //        finally
-        //        {
-        //            // Cerrar el socket
-        //            sender.Shutdown(SocketShutdown.Both);
-        //            sender.Close();
-        //        }
-        //    }
-        //}
     }
-    
-}
-
-
-//                Console.WriteLine("Conexión establecida con el servidor.");
-                //Console.WriteLine("Ingrese su nombre de usuario de FIRMA:");
-                //string username = Console.ReadLine();
-                //Console.WriteLine("Ingrese su mensaje de FIRMA:");
-                //string message = Console.ReadLine();
-                //string usernamemessage = "FIRMA\n"+username + "\n" + message;
-                //Console.WriteLine("Mensaje se enviará como:\n" + usernamemessage);

@@ -67,8 +67,7 @@ namespace ServidorSocket;
             string response = Encoding.ASCII.GetString(responseBytes, 0, bytesRec);
             Console.WriteLine(response);
             SendToClient(handlerServer, response);
-
-    }
+        }
 
     public static void HandleClavesConn(Socket sender, Socket handlerServer, string clave)
         {

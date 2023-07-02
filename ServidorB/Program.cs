@@ -11,7 +11,7 @@ namespace ServidorB
     {
         //inyección de dependencias para ser usadas 
         private static bool _serverRunning = false; // pasa estar en el ciclo infinito
-        private static readonly UserContext _userContext = new("Usuarios.txt");
+        private static readonly UserContext _userContext = new("/home/jorgegetsmad/RiderProjects/SistemasDistribuidosProyecto/ServidorB/bin/Debug/net6.0/Usuarios.txt");
 
         //clase main donde se inicia el proyecto A
         static void Main(string[] args)
@@ -112,17 +112,11 @@ namespace ServidorB
             string username = credentials[0];
 
             User user = _userContext.FindUser(username);
-
-            if (user != null && user.Clave == credentials[1])
-            {
-                byte[] messageBytes = Encoding.ASCII.GetBytes("valido");
-                sender.Send(messageBytes);
-            }
-            else
-            {
-                byte[] messageBytes = Encoding.ASCII.GetBytes("Invalido");
-                sender.Send(messageBytes);
-            }
+            string response;
+            if (user != null && user.Clave == credentials[1]) response = "1";
+            else response = "0";
+            byte[] messageBytes = Encoding.ASCII.GetBytes(response);
+            sender.Send(messageBytes);
         }
 
         //metodo para cerrar la conexión de algún cliente, recibe un socket y luego cierra la conexión del mismo
