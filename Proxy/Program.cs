@@ -29,10 +29,7 @@ namespace ServidorSocket;
 
             Console.WriteLine("Servidor Proxy. Esperando conexiones...");
             // Console.WriteLine($"Dirección Ip Ethernet del servidor: {GetLocalIPAddress()} ");
-            // Console.WriteLine($"Dirección Ip WIFI del servidor: {GetWifiIPAddress()} ");
-
-            Console.ReadKey();
-            
+            // Console.WriteLine($"Dirección Ip WIFI del servidor: {GetWifiIPAddress()} ");            
             try
             {
                 while (_serverRunning)
