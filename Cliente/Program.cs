@@ -103,7 +103,7 @@ namespace ClienteSocket.ProgramPractica03
 
                 //A partir de aca se empieza a firmar el texto
                 // Convierte el mensaje y la clave a arreglos de bytes
-                byte[] mensajeBytes = Encoding.UTF8.GetBytes(message);
+                byte[] mensajeBytes = Encoding.UTF8.GetBytes(texto);
                 byte[] claveBytes = Encoding.UTF8.GetBytes(response);
 
                 // Crea un objeto HMACSHA256 usando la clave
