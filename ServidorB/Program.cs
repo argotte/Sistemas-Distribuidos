@@ -7,11 +7,15 @@ using ProyectoConsola.Model;
 
 namespace ServidorB
 {
+    /// <summary>
+    /// Clase que representa el servidor de autenticación. Espera conexiones de clientes y verifica las credenciales de los usuarios.
+    /// </summary>
     class Servidor
     {
         //inyección de dependencias para ser usadas 
         private static bool _serverRunning = false; // pasa estar en el ciclo infinito
-        private static readonly UserContext _userContext = new("/home/jorgegetsmad/RiderProjects/SistemasDistribuidosProyecto/ServidorB/bin/Debug/net6.0/Usuarios.txt");
+        //private static readonly UserContext _userContext = new("/home/jorgegetsmad/RiderProjects/SistemasDistribuidosProyecto/ServidorB/bin/Debug/net6.0/Usuarios.txt");
+        private static readonly UserContext _userContext = new("C:\\Users\\Daniel Toro\\Documents\\universidad\\Sistemas Distribuidos\\proyecto\\Usuarios.txt");
 
         //clase main donde se inicia el proyecto A
         static void Main(string[] args)
@@ -19,6 +23,9 @@ namespace ServidorB
             StartServer(); // inicio dle server 
         }
 
+        /// <summary>
+        /// Inicia el servidor de autenticación. Espera conexiones de clientes y verifica las credenciales de los usuarios.
+        /// </summary>
         public static void StartServer()
         {
             // Establecer el endpoint para el socket se acordó el puerto 5002 para el servidor de claves
@@ -62,7 +69,11 @@ namespace ServidorB
             }
         }
 
-        //metodo que controla la conexión con el cliente recibe los mensaje e envía mensaje, recibe un objeto socket TCP
+
+        /// <summary>
+        /// Maneja la conexión de un cliente. Espera a recibir las credenciales del cliente (nombre de usuario y contraseña) y verifica si son válidas.
+        /// </summary>
+        /// <param name="handler">Socket que representa la conexión con el cliente.</param>
         public static void HandleClient(Socket handler)
         {
             bool clientRunning = true; // para el ciclo infinito
@@ -104,8 +115,12 @@ namespace ServidorB
                  Console.WriteLine(ex.ToString());
             }
         }
-        //metodo que recibe el nombre de usuario y el socket del cliente tambien el mensaje que se pasó ya deserealizado
-        //realiza una consulta al archivo userContext si existe retorna valido sino false.
+
+        /// <summary>
+        /// Maneja la conexión de un cliente y verifica si las credenciales del usuario son válidas.
+        /// </summary>
+        /// <param name="sender">Socket que representa la conexión con el cliente.</param>
+        /// <param name="data">Credenciales del usuario (nombre de usuario y contraseña).</param>
         public static void HandleClavesConn(Socket sender, string data)
         {
             string[] credentials = data.Split("\n");
@@ -119,7 +134,11 @@ namespace ServidorB
             sender.Send(messageBytes);
         }
 
-        //metodo para cerrar la conexión de algún cliente, recibe un socket y luego cierra la conexión del mismo
+
+        /// <summary>
+        /// Cierra la conexión con un cliente.
+        /// </summary>
+        /// <param name="clientSocket">Socket que representa la conexión con el cliente.</param>
         public static void CloseConnection(Socket clientSocket)
         {
             bool _clientRunning = false;
@@ -127,7 +146,10 @@ namespace ServidorB
             clientSocket.Close();
         }
 
-        //metodo para conocer la IP local del server, muestra la IP del puerto ethernet
+        /// <summary>
+        /// Obtiene la dirección IP local del servidor.
+        /// </summary>
+        /// <returns>La dirección IP local del servidor.</returns>
         public static string GetLocalIPAddress()
         {
             IPHostEntry host;
@@ -146,8 +168,10 @@ namespace ServidorB
             return localIP;
         }
 
-        //metodo para conocer la IP local del server, muestra la IP del puerto WIFI ethernet 
-
+        /// <summary>
+        /// Obtiene la dirección IP local del servidor a través de la interfaz de red inalámbrica (Wi-Fi).
+        /// </summary>
+        /// <returns>La dirección IP local del servidor a través de la interfaz de red inalámbrica (Wi-Fi).</returns>
         public static string GetWifiIPAddress()
         {
             var wifiInterface = NetworkInterface.GetAllNetworkInterfaces()

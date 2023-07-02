@@ -8,7 +8,12 @@ using System.Text;
 namespace ClienteSocket.ProgramPractica03;
 class Cliente
     {
-        static void Main(string[] args)
+
+    /// <summary>
+    /// Función principal del cliente que presenta un menú con tres opciones y permite al usuario seleccionar una opción ingresando el número correspondiente en la consola.
+    /// </summary>
+    /// <param name="args"></param>
+    static void Main(string[] args)
         {
             int opcion = -1;
             while (opcion != 0)
@@ -69,64 +74,114 @@ class Cliente
             Console.ReadKey();
         }
 
+    /// <summary>
+    /// Función que maneja la lógica de la opción "Firmar" del menú del cliente. Se conecta al servidor remoto a través de un socket TCP/IP, autentica al usuario y firma el texto ingresado por el usuario.
+    /// </summary>
+    /// <param name="ipAddr">Dirección IP del servidor.</param>
+    /// <param name="portNum">Número de puerto utilizado por el servidor.</param>
+    public static void Clave(string? ipAddr, int portNum)
+    {
+        // Establecer el endpoint para el socket
+        IPEndPoint endpoint = new IPEndPoint(IPAddress.Parse(ipAddr!), portNum);
 
-        public static void Clave(string? ipAddr, int portNum)
+        // Crear un socket TCP/IP
+        Socket sender = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+        try
         {
-            // Establecer el endpoint para el socket
-            IPEndPoint endpoint = new IPEndPoint(IPAddress.Parse(ipAddr!), portNum);
+            // Conectar el socket al endpoint remoto
+            sender.Connect(endpoint);
+            Console.WriteLine("Conexión establecida con el servidor.");
 
-            // Crear un socket TCP/IP
-            Socket sender = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-
-            try
+            // Clave privada usuario
+            Console.WriteLine("Ingrese su nombre de usuario: ");
+            string username = Console.ReadLine();
+            string? clave;
+            string response = SendKeyRequest(sender, username);
+            if (response == "Usuario ya registrado")
             {
-                // Conectar el socket al endpoint remoto
-                sender.Connect(endpoint);
-                Console.WriteLine("Conexión establecida con el servidor.");
-
-                // Clave privada usuario
-                Console.WriteLine("Ingrese su nombre de usuario: ");
-                string username = Console.ReadLine();
-                string? clave;
-                string response = SendKeyRequest(sender, username);
-                if (response == "Usuario ya registrado")
+                Console.WriteLine($"Introduzca su clave: ");
+                clave = Console.ReadLine();
+                if (SendAuthRequest(sender, username, clave))
+                    response = clave;
+                else
                 {
-                    Console.WriteLine($"Introduzca su clave: ");
-                    clave = Console.ReadLine();
-                    if (SendAuthRequest(sender, username, clave))
-                        response = clave;
-                    else
+                    Console.WriteLine("Clave no Valida. Intente Nuevamente");
+                    return;
+                }
+            }
+            else
+                Console.WriteLine($"Clave: {response}");
+
+            //Firmar texto
+            Console.WriteLine("Escriba su texto a firmar: ");
+            string texto = Console.ReadLine();
+            // Devuelve la firma
+            string firma = SignText(texto, response);
+            Console.WriteLine($"Firma: {firma}");
+
+            // Guardar la firma en un archivo de texto en la carpeta de documentos del usuario
+            Console.WriteLine("¿Desea guardar la firma en un archivo de texto? [y/n]");
+            string respuesta = Console.ReadLine();
+
+            if (respuesta == "y" || respuesta == "Y")
+            {
+                // Obtener la ruta de la carpeta de documentos del usuario actual
+                string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+
+                // Combinar la ruta de la carpeta de documentos con el nombre de la carpeta y el archivo de firma
+                string folderPath = Path.Combine(documentsPath, "psb_2023");
+                string filePath = Path.Combine(folderPath, "firmas.txt");
+
+                // Crear la carpeta si no existe
+                if (!Directory.Exists(folderPath))
+                {
+                    Directory.CreateDirectory(folderPath);
+                }
+
+                // Crear o abrir el archivo de texto para escribir la firma
+                StreamWriter writer = new StreamWriter(filePath, true);
+
+                try
+                {
+                    // Escribir la firma en el archivo
+                    writer.WriteLine(firma);
+                    Console.WriteLine($"Firma guardada en {filePath}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error al guardar la firma: {ex.Message}");
+                }
+                finally
+                {
+                    if (writer != null)
                     {
-                        Console.WriteLine("Clave no Valida. Intente Nuevamente");
-                        return;
+                        writer.Close();
                     }
                 }
-                else
-                    Console.WriteLine($"Clave: {response}");
-
-                //Firmar texto
-                Console.WriteLine("Escriba su texto a firmar: ");
-                string texto = Console.ReadLine();
-                // Devuelve la firma
-                string firma = SignText(texto, response);
-                Console.WriteLine($"Firma: {firma}");
-            }
-            catch (SocketException socketEx)
-            {
-                Console.WriteLine($"SOCKET ERROR: {socketEx.Message}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            finally
-            {
-                CloseConnection(sender);
             }
         }
-
-        public static void Autenticar(string? ipAddr, int portNum)
+        catch (SocketException socketEx)
         {
+            Console.WriteLine($"SOCKET ERROR: {socketEx.Message}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            CloseConnection(sender);
+        }
+    }
+
+    /// <summary>
+    /// Función que maneja la lógica de la opción "Autenticar" del menú del cliente. Se conecta al servidor remoto a través de un socket TCP/IP y autentica al usuario.
+    /// </summary>
+    /// <param name="ipAddr">Dirección IP del servidor.</param>
+    /// <param name="portNum">Número de puerto utilizado por el servidor.</param>
+    public static void Autenticar(string? ipAddr, int portNum)
+    {
             // Establecer el endpoint para el socket
             IPEndPoint endpoint = new IPEndPoint(IPAddress.Parse(ipAddr!), portNum);
 
@@ -163,10 +218,15 @@ class Cliente
             {
                 CloseConnection(sender);
             }
-        }
-        
-        public static void Integridad(string? ipAddr, int portNum)
-        {
+    }
+
+    /// <summary>
+    /// Función que maneja la lógica de la opción "Integridad" del menú del cliente. Se conecta al servidor remoto a través de un socket TCP/IP y verifica la integridad del archivo especificado por el usuario.
+    /// </summary>
+    /// <param name="ipAddr">Dirección IP del servidor.</param>
+    /// <param name="portNum">Número de puerto utilizado por el servidor.</param>
+    public static void Integridad(string? ipAddr, int portNum)
+    {
             // Establecer el endpoint para el socket
             IPEndPoint endpoint = new IPEndPoint(IPAddress.Parse(ipAddr!), portNum);
 
@@ -200,10 +260,17 @@ class Cliente
             {
                 CloseConnection(sender);
             }
-        }
+    }
 
-        private static bool SendAuthRequest(Socket sender, string username, string clave)
-        {
+    /// <summary>
+    /// Función que envía una solicitud de autenticación al servidor remoto y devuelve un valor booleano que indica si el usuario está autenticado o no.
+    /// </summary>
+    /// <param name="sender">Socket que representa la conexión con el servidor.</param>
+    /// <param name="username">Nombre de usuario del cliente.</param>
+    /// <param name="password">Contraseña del cliente.</param>
+    /// <returns>Un valor booleano que indica si el usuario está autenticado o no.</returns>
+    private static bool SendAuthRequest(Socket sender, string username, string clave)
+    {
             //Enviar mensaje al servidor
             string message = $"AUTENTICAR\n{username}\n{clave}";
             byte[] messageBytes = Encoding.ASCII.GetBytes(message);
@@ -214,10 +281,16 @@ class Cliente
             int bytesRec = sender.Receive(responseBytes);
             string response = Encoding.ASCII.GetString(responseBytes, 0, bytesRec);
             return response == "1";
-        }
+    }
 
-        private static string SendKeyRequest(Socket sender, string? username)
-        {
+    /// <summary>
+    /// Función que envía una solicitud de clave al servidor remoto y devuelve la respuesta.
+    /// </summary>
+    /// <param name="sender">Socket que representa la conexión con el servidor.</param>
+    /// <param name="username">Nombre de usuario del cliente.</param>
+    /// <returns>La respuesta del servidor.</returns>
+    private static string SendKeyRequest(Socket sender, string? username)
+    {
             //Enviar mensaje al servidor
             string message = $"CLAVE\n{username}";
             byte[] messageBytes = Encoding.ASCII.GetBytes(message);
@@ -228,10 +301,16 @@ class Cliente
             int bytesRec = sender.Receive(responseBytes);
             string response = Encoding.ASCII.GetString(responseBytes, 0, bytesRec);
             return response;
-        }
+     }
 
-        private static string SignText(string texto, string clave)
-        {
+    /// <summary>
+    /// Función que firma un texto utilizando la clave privada del usuario y devuelve la firma.
+    /// </summary>
+    /// <param name="texto">Texto a firmar.</param>
+    /// <param name="clave">Clave privada del usuario.</param>
+    /// <returns>La firma del texto.</returns>
+    private static string SignText(string texto, string clave)
+    {
             // Convierte el mensaje y la clave a arreglos de bytes
             byte[] mensajeBytes = Encoding.UTF8.GetBytes(texto);
             byte[] claveBytes = Encoding.UTF8.GetBytes(clave);
@@ -245,10 +324,17 @@ class Cliente
             // Convierte el hash a un string hexadecimal
             string firma = BitConverter.ToString(hash).Replace("-", "");
             return firma;
-        }
+     }
 
-        private static bool VerifyText(string texto, string textoFirmado, string clave)
-        {
+    /// <summary>
+    /// Verifica la integridad de un texto firmado utilizando la clave del usuario.
+    /// </summary>
+    /// <param name="texto">El texto original.</param>
+    /// <param name="textoFirmado">El texto firmado que se va a verificar.</param>
+    /// <param name="clave">La clave del usuario utilizada para firmar el texto original.</param>
+    /// <returns>Un valor booleano que indica si el texto firmado es válido o no.</returns>
+    private static bool VerifyText(string texto, string textoFirmado, string clave)
+    {
             byte[] mensajeBytes = Encoding.UTF8.GetBytes(texto);
             byte[] claveBytes = Encoding.UTF8.GetBytes(clave);
 
@@ -258,33 +344,37 @@ class Cliente
                 string firma = BitConverter.ToString(computedHash).Replace("-", "");
                 return String.Equals(textoFirmado, firma);
             }
-        }
+    }
 
-        // private static string SignText2(string texto, string clave)
-        // {
-        //     byte[] hash;
-        //     using (SHA256 sha256 = SHA256.Create())
-        //     {
-        //         byte[] data = Encoding.UTF8.GetBytes(texto);
-        //         hash = sha256.ComputeHash(data);
-        //     }
-        //
-        //     byte[] signature;
-        //     using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(2048))
-        //     {
-        //         rsa.ImportParameters(new RSAParameters
-        //         {
-        //             D = Encoding.UTF8.GetBytes(clave),
-        //             Exponent = new byte[] {1, 0, 1}
-        //         });
-        //
-        //         signature = rsa.SignHash(hash, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-        //     }
-        //
-        //     return BitConverter.ToString(signature).Replace("-", "");;
-        // }
+    // private static string SignText2(string texto, string clave)
+    // {
+    //     byte[] hash;
+    //     using (SHA256 sha256 = SHA256.Create())
+    //     {
+    //         byte[] data = Encoding.UTF8.GetBytes(texto);
+    //         hash = sha256.ComputeHash(data);
+    //     }
+    //
+    //     byte[] signature;
+    //     using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(2048))
+    //     {
+    //         rsa.ImportParameters(new RSAParameters
+    //         {
+    //             D = Encoding.UTF8.GetBytes(clave),
+    //             Exponent = new byte[] {1, 0, 1}
+    //         });
+    //
+    //         signature = rsa.SignHash(hash, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+    //     }
+    //
+    //     return BitConverter.ToString(signature).Replace("-", "");;
+    // }
 
-        public static void CloseConnection(Socket clientSocket)
+    /// <summary>
+    /// Función que cierra la conexión con el servidor remoto.
+    /// </summary>
+    /// <param name="clientSocket">Socket que representa la conexión con el servidor.</param>
+    public static void CloseConnection(Socket clientSocket)
         {
             bool _clientRunning = false;
             byte[] messageBytes = Encoding.ASCII.GetBytes("EOF");

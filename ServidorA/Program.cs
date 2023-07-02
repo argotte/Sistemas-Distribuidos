@@ -5,17 +5,24 @@ using ProyectoConsola.Model;
 
 namespace ServidorA
 {
+    /// <summary>
+    /// Clase que representa el servidor de claves. Espera conexiones de clientes y genera claves aleatorias para ellos.
+    /// </summary>
     class Servidor
     {
         private static bool _serverRunning = false;
         //acá la ruta del archivo TXT 
-        private static readonly UserContext _userContext = new("/home/jorgegetsmad/RiderProjects/SistemasDistribuidosProyecto/ServidorB/bin/Debug/net6.0/Usuarios.txt");
+        //private static readonly UserContext _userContext = new("/home/jorgegetsmad/RiderProjects/SistemasDistribuidosProyecto/ServidorB/bin/Debug/net6.0/Usuarios.txt");
+        private static readonly UserContext _userContext = new("C:\\Users\\Daniel Toro\\Documents\\universidad\\Sistemas Distribuidos\\proyecto\\Usuarios.txt");
 
         static void Main(string[] args)
         {
             StartServer();
         }
 
+            /// <summary>
+            /// Inicia el servidor de claves. Espera conexiones de clientes y genera claves aleatorias para ellos.
+            /// </summary>
         public static void StartServer()
         {
             IPEndPoint endpoint = new IPEndPoint(IPAddress.Any, 5002);
@@ -47,6 +54,10 @@ namespace ServidorA
             }
         }
 
+        /// <summary>
+        /// Maneja la conexión de un cliente. Espera a recibir el nombre de usuario del cliente y genera una clave aleatoria para él.
+        /// </summary>
+        /// <param name="handler">Socket que representa la conexión con el cliente.</param>
         public static void HandleClient(Socket handler)
         {
             bool clientRunning = true;
@@ -88,6 +99,11 @@ namespace ServidorA
             }
         }
 
+        /// <summary>
+        /// Maneja la conexión de un cliente y genera una clave aleatoria para él.
+        /// </summary>
+        /// <param name="sender">Socket que representa la conexión con el cliente.</param>
+        /// <param name="data">Nombre de usuario del cliente.</param>
         public static void HandleClavesConn(Socket sender, string data)
         {
             var usuario = _userContext.FindUser(data);
@@ -106,9 +122,13 @@ namespace ServidorA
             }
         }
 
+        /// <summary>
+        /// Genera una clave aleatoria de 8 caracteres, compuesta por letras mayúsculas, minúsculas y números.
+        /// </summary>
+        /// <returns>La clave aleatoria generada.</returns>
         private static string GenerarClaveAleatoria()
         {
-            const string caracteresPermitidos = "0123456789";
+            const string caracteresPermitidos = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             var random = new Random();
             var clave = new char[8];
             for (int i = 0; i < clave.Length; i++)
@@ -120,6 +140,10 @@ namespace ServidorA
             return new string(clave);
         }
 
+        /// <summary>
+        /// Cierra la conexión con un cliente.
+        /// </summary>
+        /// <param name="clientSocket">Socket que representa la conexión con el cliente.</param>
         public static void CloseConnection(Socket clientSocket)
         {
             clientSocket.Shutdown(SocketShutdown.Both);
