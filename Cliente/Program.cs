@@ -72,6 +72,7 @@ class Cliente
                             break;
                         case 0:
                             Console.WriteLine("\nSaliendo del programa...");
+                            writer.Close();
                             break;
                         default:
                             Console.WriteLine("\nOpcion no valida");
