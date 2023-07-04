@@ -85,12 +85,12 @@ class Cliente
                 }
 
                 Console.WriteLine("\nPresione cualquier tecla para continuar...");
-                Console.ReadKey();
+                Console.ReadLine();
             }
 
             Console.Clear();
             Console.WriteLine("\nPrograma finalizado");
-            Console.ReadKey();
+            Console.ReadLine();
         }
 
     /// <summary>
@@ -369,7 +369,7 @@ class Cliente
                 string firma = BitConverter.ToString(computedHash).Replace("-", "");
                 return String.Equals(textoFirmado, firma);
             }
-        }
+    }
 
         public static void ClienteMensajesConnect(string? ipAddr, int portNum)
         {
@@ -418,14 +418,17 @@ class Cliente
                 byte[] responseBytes = new byte[1024];
                 int bytesRec = handler.Receive(responseBytes);
                 string response = Encoding.ASCII.GetString(responseBytes, 0, bytesRec);
+                string[] words = response.Split("\n");
+                
                 if (response == "EOF")
                 {
                     CloseConnection(handler);
                     break;
                 }
                 
-                Console.WriteLine("Respuesta Recibida del cliente: " + response);
-                
+                Console.WriteLine("Respuesta Recibida del cliente: " + words[0]);
+                Console.WriteLine(VerifyText(words[0], words[2], words[1]) ? "MENSAJE AUTENTICO" : "MENSAJE NO AUTENTICO");
+
                 Console.WriteLine("Introduzca mensaje para el otro cliente: ");
                 string msg = Console.ReadLine();
                 if (msg == "EOF")
@@ -444,6 +447,12 @@ class Cliente
             {
                 Console.Write("Introduzca mensaje para el otro cliente: ");
                 string msg = Console.ReadLine();
+                Console.Write("Introduzca su clave: ");
+                string clave = Console.ReadLine();
+                //aqui se deberia autenticar pero deberiamos implementar un estado mejor
+                string firma = SignText(msg, clave);
+
+                string msjSend = msg + "\n" + clave + "\n" + firma;
 
                 if (msg == "EOF")
                 {
@@ -451,7 +460,7 @@ class Cliente
                     break;
                 }
                 
-                handler.Send(Encoding.ASCII.GetBytes(msg));
+                handler.Send(Encoding.ASCII.GetBytes(msjSend));
 
                 // Recibir la respuesta del servidor y mostrarla en la consola
                 byte[] responseBytes = new byte[1024];
